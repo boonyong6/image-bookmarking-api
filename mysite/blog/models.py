@@ -5,10 +5,14 @@ from django.utils import timezone
 # from django.db.models.functions import Now
 
 
-# Create your models here.
+class PublishedManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(status=Post.Status.PUBLISHED)
+
+
 class Post(models.Model):
-    # Enum type (aka choices)
-    class Status(models.TextChoices):
+    # * Model fields
+    class Status(models.TextChoices):  # Enum type (choices)
         DRAFT = "DF", "Draft"
         PUBLISHED = "PB", "Published"
 
@@ -27,13 +31,21 @@ class Post(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=2, choices=Status, default=Status.DRAFT)
+    
+    # * Model managers
+    # First manager defined becomes default manager.
+    # Django will not create the `objects` manager if the model defines 
+    #   another manager. So, define it explicitly to keep it.
+    objects = models.Manager()
+    published = PublishedManager()  # Our custom manager.
 
-    # Defines metadata.
+    # * Model metadata
     class Meta:
         ordering = ["-publish"]  # Defines a default sort order.
         indexes = [
             models.Index(fields=["-publish"]),
         ]
+        # default_manager_name = "published"  # Specifies a different default manager.
 
     def __str__(self):
         return self.title
