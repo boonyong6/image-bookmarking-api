@@ -4,7 +4,7 @@ from . import views
 
 app_name = "blog"  # Application namespace
 
-url_patterns = [
+urlpatterns = [
     # Post views
     path("", views.post_list, name="post_list"),
     # Use `<>` to capture values from the URL.
