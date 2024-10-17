@@ -27,14 +27,14 @@ class Post(models.Model):
     )
     body = models.TextField()  # TEXT column
     publish = models.DateTimeField(default=timezone.now)  # DATETIME column
-    # publish = models.DateTimeField(db_default=Now())  # Database-computed
+    # publish = models.DateTimeField(db_default=Now())  # Database-computed (introduced in Django 5)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=2, choices=Status, default=Status.DRAFT)
-    
+
     # * Model managers
     # First manager defined becomes default manager.
-    # Django will not create the `objects` manager if the model defines 
+    # Django will not create the `objects` manager if the model defines
     #   another manager. So, define it explicitly to keep it.
     objects = models.Manager()
     published = PublishedManager()  # Our custom manager.
