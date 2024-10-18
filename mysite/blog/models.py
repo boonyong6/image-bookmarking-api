@@ -20,7 +20,7 @@ class Post(models.Model):
     title = models.CharField(max_length=250)  # VARCHAR column
     # Short label that contains only letters, numbers, underscores, or hyphens
     #   for building SEO-friendly URLs.
-    slug = models.SlugField(max_length=250)  # VARCHAR column
+    slug = models.SlugField(max_length=250, unique_for_date="publish")  # VARCHAR column
     # Defines a many-to-one relationship (an author can write many posts).
     # `related_name` specifies the name of the reverse relationship, `user.blog_posts`.
     author = models.ForeignKey(
@@ -51,7 +51,7 @@ class Post(models.Model):
     def __str__(self):
         return self.title
 
-    # Canonical URL.
+    # Canonical URL - preferred/most representative/main URL for a resource.
     def get_absolute_url(self):
         # `reverse()` is a URL resolver that build the URL dynamically using
         #   the URL name defined in the `blog/urls.py`.
