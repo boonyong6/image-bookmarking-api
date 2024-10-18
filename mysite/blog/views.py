@@ -1,7 +1,22 @@
 from django.http import HttpRequest
 from django.shortcuts import render, get_object_or_404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.views.generic import ListView
 from .models import Post
+
+
+# Similar to the `post_list` view. But, exception handling is a bit different.
+class PostListView(ListView):
+    """
+    Alternative post list view.
+    """
+
+    # Alternatively, define `model = Post` and Django will built
+    #   the generic `Post.objects.all()` QuerySet.
+    queryset = Post.published.all()
+    context_object_name = "posts"  # Default name is `object_list`.
+    paginate_by = 3
+    template_name = "blog/post/list.html"  # Default template is `blog/post_list.html`.
 
 
 # Create your views here.

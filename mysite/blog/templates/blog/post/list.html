@@ -15,5 +15,6 @@
   {% endfor %}
 
   {% comment %} Loads the pagination template and use the current template context. {% endcomment %}
-  {% include "pagination.html" with page=posts %}
+  {% comment %} `ListView` view uses the `page_obj` variable to represent the page requested. {% endcomment %}
+  {% include "pagination.html" with page=page_obj %}
 {% endblock content %}
