@@ -689,6 +689,7 @@ post.delete()
 ## The request/response cycle
 
 - **Basic reference** for how Django processes requests (**doesn't include middleware**, for the sake of simplicity).
+
   ![1-19-the-django-request-response-cycle](images/1-19-the-django-request-response-cycle.png)
 
 ## Management commands used in this chapter
