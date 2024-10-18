@@ -91,11 +91,12 @@
 
 - By default, Django includes **only part** of [all the settings](https://docs.djangoproject.com/en/5.0/ref/settings/).
 - Notable project settings:
-  Setting | Description
-  -|-
-  `ALLOWED_HOSTS` | When `DEBUG` is `False` (production), you'll have to add your domain/host to allow it to serve your Django site.
-  `INSTALLED_APPS` | Indicates which applications are active for this site.
-  `USE_TZ` | Provides support for timezone-aware datetime.
+
+  | Setting          | Description                                                                                                      |
+  | ---------------- | ---------------------------------------------------------------------------------------------------------------- |
+  | `ALLOWED_HOSTS`  | When `DEBUG` is `False` (production), you'll have to add your domain/host to allow it to serve your Django site. |
+  | `INSTALLED_APPS` | Indicates which applications are active for this site.                                                           |
+  | `USE_TZ`         | Provides support for timezone-aware datetime.                                                                    |
 
 ### Projects and applications
 
@@ -126,12 +127,14 @@
 ### Creating the Post model
 
 - **Model field types** used:
-  Field | Description
-  -|-
-  `CharField` | - `VARCHAR` column.
-  `SlugField` | - `VARCHAR` column.<br />- A short label that **contains only letters, numbers, underscores, or hyphens**.<br />- **E.g.** Django Reinhardt: A legend of Jazz -> django-reinhardt-legend-jazz<br />- **Use case:** To build **SEO-friendly URLs**.
-  `TextField` | - `TEXT` column.
-  `DateTimeField` | - `DATETIME` column.
+
+  | Field           | Description                                                                                                                                                                                                                                        |
+  | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `CharField`     | - `VARCHAR` column.                                                                                                                                                                                                                                |
+  | `SlugField`     | - `VARCHAR` column.<br />- A short label that **contains only letters, numbers, underscores, or hyphens**.<br />- **E.g.** Django Reinhardt: A legend of Jazz -> django-reinhardt-legend-jazz<br />- **Use case:** To build **SEO-friendly URLs**. |
+  | `TextField`     | - `TEXT` column.                                                                                                                                                                                                                                   |
+  | `DateTimeField` | - `DATETIME` column.                                                                                                                                                                                                                               |
+
 - Django uses `__str__()` to display the object name in many places, such as the **admin site**.
 - **By default**, Django **adds an auto-incrementing primary key field** (`id`) to each model.
   - **Field type for this** is specified in each app config (`apps.py`) or globally in the `settings.py` (`DEFAULT_AUTO_FIELD`).
@@ -658,11 +661,13 @@ post.delete()
 
 ### Creating a base template - `base.html`
 
-| Template tag        | Description                                                                                      |
-| ------------------- | ------------------------------------------------------------------------------------------------ |
-| `{% load static %}` | - Loads the **`static` template tags**.<br />- Provided by the `django.contrib.staticfiles` app. |
-| `{% static %}`      | - To include static files.<br />- `<app>/static/` is the **default directory** for static files. |
-| `{% block %}`       | - Templates that inherit from the `base.html` can fill in the block.                             |
+- Template tags used:
+
+  | Template tag        | Description                                                                                      |
+  | ------------------- | ------------------------------------------------------------------------------------------------ |
+  | `{% load static %}` | - Loads the **`static` template tags**.<br />- Provided by the `django.contrib.staticfiles` app. |
+  | `{% static %}`      | - To include static files.<br />- `<app>/static/` is the **default directory** for static files. |
+  | `{% block %}`       | - Templates that inherit from the `base.html` can fill in the block.                             |
 
 ### Creating the post list template - `post/list.html`
 
