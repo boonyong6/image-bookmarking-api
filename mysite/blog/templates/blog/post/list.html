@@ -13,4 +13,7 @@
     <p class="date">Published {{ post.publish }} by {{ post.author }}</p>
     {{ post.body|truncatewords:30|linebreaks }}
   {% endfor %}
+
+  {% comment %} Loads the pagination template and use the current template context. {% endcomment %}
+  {% include "pagination.html" with page=posts %}
 {% endblock content %}
