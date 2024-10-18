@@ -12,11 +12,11 @@ class PublishedManager(models.Manager):
 
 
 class Post(models.Model):
-    # * Model fields
     class Status(models.TextChoices):  # Enum type (choices)
         DRAFT = "DF", "Draft"
         PUBLISHED = "PB", "Published"
 
+    # * Model fields
     title = models.CharField(max_length=250)  # VARCHAR column
     # Short label that contains only letters, numbers, underscores, or hyphens
     #   for building SEO-friendly URLs.
