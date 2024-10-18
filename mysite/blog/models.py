@@ -1,5 +1,6 @@
 from django.conf import settings  # Project's settings
 from django.db import models
+from django.urls import reverse
 from django.utils import timezone
 
 # from django.db.models.functions import Now
@@ -49,3 +50,9 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+
+    # Canonical URL.
+    def get_absolute_url(self):
+        # `reverse()` is a URL resolver that build the URL dynamically using
+        #   the URL name defined in the `blog/urls.py`.
+        return reverse("blog:post_detail", args=[self.id])
