@@ -1,0 +1,21 @@
+{% extends "blog/base.html" %}
+
+{% block title %}
+  Share a post
+{% endblock title %}
+
+{% block content %}
+  {% if sent %}
+    {% comment %} Display a success message when the email has been sent. {% endcomment %}
+    <h1>E-mail successfully sent</h1>
+    <p>"{{ post.title }}" was successfully sent to {{ form.cleaned_data.to }}.</p>
+  {% else %}
+    {% comment %} Display the form to share a post via email {% endcomment %}
+    <h1>Share "{{ post.title }}" by e-mail</h1>
+    <form method="post">
+      {{ form.as_p }}  {% comment %} Renders form fields using `<p>`. {% endcomment %}
+      {% csrf_token %}
+      <input type="submit" value="Send e-mail">
+    </form>
+  {% endif %}
+{% endblock content %}
