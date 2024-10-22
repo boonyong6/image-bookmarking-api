@@ -79,8 +79,8 @@ def post_share(request: HttpRequest, post_id):
             # * Send email
             # To build a complete URL, including the HTTP schema and hostname.
             post_url = request.build_absolute_uri(post.get_absolute_url())
-            subject = f"{cd["name"]} ({cd["email"]}) recommends you read {post.title}"
-            message = f"Read {post.title} at {post_url}\n\n{cd["name"]}'s comments: {cd["comments"]}"
+            subject = f"{cd['name']} ({cd['email']}) recommends you read {post.title}"
+            message = f"Read {post.title} at {post_url}\n\n{cd['name']}'s comments: {cd['comments']}"
             send_mail(
                 subject=subject,
                 message=message,
