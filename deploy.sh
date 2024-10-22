@@ -29,6 +29,7 @@ echo
 echo '=> Collecting static files into STATIC_ROOT...'
 python3 $website_root/manage.py collectstatic --noinput
 echo '=> End collectstatic'
+echo
 
 echo '=> Restarting the website...'
 devil www restart "$website_host"
