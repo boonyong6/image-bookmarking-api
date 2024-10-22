@@ -27,7 +27,7 @@ echo '=> End Migration.'
 echo
 
 echo '=> Collecting static files into STATIC_ROOT...'
-python3 $website_root/manage.py collectstatic
+python3 $website_root/manage.py collectstatic --noinput
 echo '=> End collectstatic'
 
 echo '=> Restarting the website...'
