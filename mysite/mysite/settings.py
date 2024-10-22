@@ -128,9 +128,9 @@ STATIC_ROOT = Path(BASE_DIR, "public", "static")
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Email server configuration
-EMAIL_HOST = "smtp.gmail.com"
+EMAIL_HOST = config("EMAIL_HOST")
 EMAIL_HOST_USER = config("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
-EMAIL_POST = 587
-EMAIL_USE_TLS = True
+EMAIL_POST = config("EMAIL_POST")
+EMAIL_USE_TLS = config("EMAIL_USE_TLS")
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
