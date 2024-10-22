@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import json
 from pathlib import Path
 from decouple import config
 
@@ -26,7 +27,7 @@ SECRET_KEY = "django-insecure-ir78&xv&3zi@nq5q&wuo^d71d=5k$#elrs)*65b(u_exp(35jw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = json.loads(config("WEBSITE_HOSTS", default="[]"))
 
 
 # Application definition
