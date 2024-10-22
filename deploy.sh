@@ -1,7 +1,4 @@
 #!/bin/bash
-website_root=$WEBSITE_ROOT
-website_host=$WEBSITE_HOST
-
 echo '=> Start deploying...'
 echo
 
@@ -11,28 +8,28 @@ echo '=> End pull.'
 echo
 
 echo '=> Syncing project files...'
-rsync -a ./mysite/ "$website_root"
+rsync -a ./mysite/ "$WEBSITE_ROOT"
 echo '=> End sync.'
 echo
 
 echo '=> Installing package dependencies...'
-source "$website_root/venv/bin/activate"
+source "$WEBSITE_ROOT/venv/bin/activate"
 python -m pip install -r requirements.txt
 echo '=> End pip install.'
 echo
 
 echo '=> Running model migrations...'
-python3 $website_root/manage.py migrate
+python3 $WEBSITE_ROOT/manage.py migrate
 echo '=> End Migration.'
 echo
 
 echo '=> Collecting static files into STATIC_ROOT...'
-python3 $website_root/manage.py collectstatic --noinput
+python3 $WEBSITE_ROOT/manage.py collectstatic --noinput
 echo '=> End collectstatic'
 echo
 
 echo '=> Restarting the website...'
-devil www restart "$website_host"
+devil www restart "$WEBSITE_HOST"
 echo '=> End restart.'
 echo
 
