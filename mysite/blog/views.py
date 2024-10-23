@@ -4,6 +4,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.generic import ListView
 from django.core.mail import send_mail
 from django.views.decorators.http import require_POST
+from django.db.models import Count
 from taggit.models import Tag
 
 from .forms import CommentForm, EmailPostForm
@@ -34,7 +35,6 @@ def post_list(request: HttpRequest, tag_slug=None):
         # Many-to-many relationship -
         #   One post can have many tags and one tag can be related to many posts.
         post_list = post_list.filter(tags__in=[tag])
-        print(post_list.query)
 
     # Pagination with 3 posts per page.
     paginator = Paginator(post_list, 3)
@@ -67,10 +67,27 @@ def post_detail(request, year, month, day, post):
     # Form for users to comment.
     form = CommentForm()
 
+    # * List of similar posts
+    # A QuerySet that returns a list of IDs.
+    # Pass `flat=True` to get single values such as [1, 2, 3, ...]
+    #   instead of [(1,) (2,) (3,) ...].
+    post_tags_ids = post.tags.values_list("id", flat=True)
+    similar_posts = Post.published.filter(tags__in=post_tags_ids).exclude(id=post.id)
+    similar_posts = similar_posts.annotate(same_tags=Count("tags")).order_by(
+        "-same_tags", "-publish"
+    )[:4]
+    # # Alternative: Provided by `django-taggit` (not QuerySet, not lazy).
+    # similar_posts = post.tags.similar_objects()
+
     return render(
         request,
         "blog/post/detail.html",
-        {"post": post, "comments": comments, "form": form},
+        {
+            "post": post,
+            "comments": comments,
+            "form": form,
+            "similar_posts": similar_posts,
+        },
     )
 
 
