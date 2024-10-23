@@ -663,11 +663,11 @@ post.delete()
 
 - Template tags used:
 
-  | Template tag        | Description                                                                                      |
-  | ------------------- | ------------------------------------------------------------------------------------------------ |
-  | `{% load static %}` | - Loads the **`static` template tags**.<br />- Provided by the `django.contrib.staticfiles` app. |
-  | `{% static %}`      | - To include static files.<br />- `<app>/static/` is the **default directory** for static files. |
-  | `{% block %}`       | - Templates that inherit from the `base.html` can fill in the block.                             |
+  | Template tag        | Description                                                                                             |
+  | ------------------- | ------------------------------------------------------------------------------------------------------- |
+  | `{% load static %}` | - Loads the **`static` custom template tags**.<br />- Provided by the `django.contrib.staticfiles` app. |
+  | `{% static %}`      | - To include static files.<br />- `<app>/static/` is the **default directory** for static files.        |
+  | `{% block %}`       | - Templates that inherit from the `base.html` can fill in the block.                                    |
 
 ### Creating the post list template - `post/list.html`
 
