@@ -20,6 +20,7 @@
     "startproject",
     "startswith",
     "staticfiles",
+    "taggit",
     "truncatewords",
     "urlpatterns",
     "wsgi"

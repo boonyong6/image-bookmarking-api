@@ -2,6 +2,7 @@ from django.conf import settings  # Project's settings
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+from taggit.managers import TaggableManager
 
 # from django.db.models.functions import Now
 
@@ -39,6 +40,7 @@ class Post(models.Model):
     #   another manager. So, define it explicitly to keep it.
     objects = models.Manager()
     published = PublishedManager()  # Our custom manager.
+    tags = TaggableManager()
 
     # * Model metadata
     class Meta:
