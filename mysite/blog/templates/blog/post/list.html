@@ -1,4 +1,5 @@
 {% extends "blog/base.html" %}
+{% load blog_tags %}
 
 {% block title %}
   My Blog
@@ -13,7 +14,7 @@
     </h2>
     {% include "blog/post/includes/tags.html" %}
     <p class="date">Published {{ post.publish }} by {{ post.author }}</p>
-    {{ post.body|truncatewords:30|linebreaks }}
+    {{ post.body|markdown|truncatewords_html:30 }}
   {% endfor %}
 
   {% comment %} Loads the pagination template and use the current template context. {% endcomment %}
