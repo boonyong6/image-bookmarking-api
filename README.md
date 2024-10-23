@@ -991,7 +991,7 @@ def post_share(request: HttpRequest, post_id):
 
 ### Rendering forms in templates - `templates/blog/post/share.html`
 
-- **Template components** used:
+- **Template tags** and **template variable** used:
 
   | Component          | Description                                                                                                                                                  |
   | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
