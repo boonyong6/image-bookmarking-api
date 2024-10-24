@@ -5,7 +5,7 @@ from django.views.generic import ListView
 from django.core.mail import send_mail
 from django.views.decorators.http import require_POST
 from django.db.models import Count
-from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
+from django.contrib.postgres.search import TrigramSimilarity
 from taggit.models import Tag
 
 from .forms import CommentForm, EmailPostForm, SearchForm
@@ -155,17 +155,10 @@ def post_search(request: HttpRequest):
         form = SearchForm(request.GET)
         if form.is_valid():
             query = form.cleaned_data["query"]
-            # Default weights are D, C, B, A (0.1, 0.2, 0.4, 1.0).
-            search_vector = SearchVector("title", weight="A") + SearchVector(
-                "body", weight="B"
-            )
-            search_query = SearchQuery(query)
             results = (
-                Post.published.annotate(
-                    search=search_vector, rank=SearchRank(search_vector, search_query)
-                )
-                .filter(rank__gte=0.3)
-                .order_by("-rank")
+                Post.published.annotate(similarity=TrigramSimilarity("title", query))
+                .filter(similarity__gt=0.1)
+                .order_by("-similarity")
             )
 
     return render(
