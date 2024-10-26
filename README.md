@@ -756,7 +756,7 @@ post.delete()
 
 ## Adding pagination - `Paginator`
 
-- Django has a built-in pagination class to manage paginated data easily by specifying the number of objects per page.
+- Django has a **built-in pagination class** to manage paginated data easily by specifying the number of objects per page.
 
 ### Adding pagination to the post list view
 
@@ -1143,3 +1143,653 @@ def post_share(request: HttpRequest, post_id):
     </p>
   </form>
   ```
+
+# 3 Extending Your Blog Application
+
+- Features to build:
+  - Tagging (`django-taggit`)
+  - Recommend **similar** posts (based on tags)
+  - **Custom template tags** and **filters** to display the **latest posts** and **most commented posts**.
+  - Sitemap for SEO.
+  - RSS feed.
+  - Full-text search (powered by PostgreSQL)
+
+## Functional overview
+
+![3-1-diagram-of-functionalities-built-in-chapter-3](images/3-1-diagram-of-functionalities-built-in-chapter-3.png)
+
+## Implementing tagging with `django-taggit`
+
+- Use tags to **categorize** posts in a **non-hierarchical manner**.
+- Tag is simply a **label** or **keyword**.
+- `django-taggit` is a **third-party** Django tagging **application**.
+  - Provides a **`Tag` model** and a **manager (`TaggableManager`)** to easily add tags to any model.
+  - [Package repository](https://github.com/jazzband/django-taggit)
+  - Add `taggit` to your `INSTALLED_APPS` to use it.
+- **Good practice:** In `INSTALLED_APPS`, keep **Django packages at the top**, **third-party packages in the middle**, and **local apps at the end**.
+- Use `tags` manager (`TaggableManager`) to **add**, **retrieve**, and **remove** tags:
+
+  ```py
+  # models.py
+  from taggit.managers import TaggableManager
+
+  class Post(models.Model):
+      ...
+      tags = TaggableManager()
+  ```
+
+- **Data models** defined by `django-taggit`:
+
+  - `content_type` and `object_id` fields combined form a **generic relationship** (more in Chapter 7) with any model.
+
+  ![3-2-tag-models-of-django-taggit](images/3-2-tag-models-of-django-taggit.png)
+
+- Usage of `tags` manager:
+
+  ```py
+  post = Post.objects.get(id=1)
+
+  # Add tags to a post.
+  post.tags.add("music", "jazz", "django")
+
+  # Remove a tag from the post.
+  post.tags.remove("django")
+  ```
+
+- To display tags in template (`blog/post/list.html`):
+
+  - **`join` template filter** works like Python's string `join()`. `","` as the `join()` separator.
+
+  ```django
+  {% block content %}
+    ...
+    {% for post in posts %}
+      ...
+      <p class="tags">Tags: {{ post.tags.all|join:"," }}</p>
+      ...
+    {% endfor %}
+    ...
+  {% endblock content %}
+  ```
+
+- Implement **filter posts by tag** in `post_list` view (optional filter).
+
+  - More about [many-to-many relationships](https://docs.djangoproject.com/en/5.0/topics/db/examples/many_to_many/) in Chapter 6.
+
+  ```py
+  # views.py
+  from taggit.models import Tag
+
+  def post_list(request, tag_slug=None):
+      post_list = Post.published.all()
+      tag = None
+
+      if tag_slug:
+          tag = get_object_or_404(Tag, slug=tag_slug)
+          # Use `__in` lookup type and `[]` to filter posts by tags.
+          # Many-to-many relationship - One post can have many tags and
+          #   one tag can be related to many posts.
+          post_list = post_list.filter(tags__in=[tag])
+
+      ...
+
+  # urls.py
+  urlpatterns = [
+      ...
+      # Uses the same view as `post_list`, but with a different name.
+      path("tag/<slug:tag_slug>/", views.post_list, name="post_list_by_tag"),
+  ]
+  ```
+
+- Add **links** in `blog/post/list.html` to filter posts by a tag.
+  ```django
+  {% block content %}
+    ...
+    {% for post in posts %}
+      ...
+      <p class="tags">
+        Tags:
+        {% for tag in post.tags.all %}
+          <a href="{% url "blog:post_list_by_tag" tag.slug %}">
+            {{ tag.name }}
+          </a>
+          {% if not forloop.last %},{% endif %}
+        {% endfor %}
+      </p>
+      ...
+    {% endfor %}
+    ...
+  {% endblock content %}
+  ```
+
+## Retrieving posts by similarity - Complex QuerySet
+
+- Similar topics will have **several tags in common**.
+- Steps to retrieve similar posts:
+  1. Get **all tags** for the current post.
+  2. Get **all posts** that are tagged **with any of those tags**.
+  3. **Exclude the current post** from that list.
+  4. **Order by** the number of tags shared.
+  5. **When** more posts have the **same number of tags**, **recommend the most recent post** (ordering).
+  6. **Limit** the query.
+- `Count` aggregation function will be used as **one of the building blocks**.
+- **Aggregate functions** included in `django.db.models`:
+  - `Avg`
+  - `Max`
+  - `Min`
+  - `Count`
+- Additional resource: [Aggregation functions](https://docs.djangoproject.com/en/5.0/topics/db/aggregation/)
+- To list similar posts:
+
+  ```py
+  from django.db.models import Count
+
+  def post_detail(request, year, month, day, post):
+      ...
+
+      # A QuerySet that returns a list of IDs.
+      # Pass `flat=True` to get single values such as [1, 2, 3, ...]
+      #   instead of [(1,) (2,) (3,) ...].
+      post_tags_ids = post.tags.values_list("id", flat=True)
+
+      similar_posts = Post.published.filter(tags__in=post_tags_ids)
+        .exclude(id=post.id)
+      similar_posts = similar_posts.annotate(same_tags=Count("tags")).order_by(
+          "-same_tags", "-publish"
+      )[:4]
+
+      # # Alternative: Provided by `django-taggit` (not QuerySet, not lazy).
+      # similar_posts = post.tags.similar_objects()
+
+      ...
+  ```
+
+- Additional resource: [`django-taggit` manager](https://django-taggit.readthedocs.io/en/stable/api.html)
+
+## Creating custom template tags and filters
+
+- **Use case:** Build a template tag to **execute a QuerySet or any server-side processing** that you want to reuse across templates.
+
+### Implementing custom template tags - `blog/templatetags/blog_tags.py`
+
+- **Helper functions** to create template tags:
+  - `simple_tag` - Returns an object.
+  - `include_tag` - Returns a **rendered template**.
+- Template tags **must live inside Django applications**.
+
+  ```
+  blog/
+      ...
+      templatetags/
+          __init__.py
+          blog_tags.py
+  ```
+
+### Creating a simple template tag - `@register.simple_tag`
+
+- To get the total posts.
+
+  ```py
+  # blog/templatetags/blog_tags.py
+  from django import template
+  from ..models import Post
+
+  register = template.Library()  # Registers the module as a tag library.
+
+  # Use `name` attribute to register the tag using a different name.
+  # By default, the function name is used as the tag name.
+  # Usage: {% total_posts %}
+  @register.simple_tag
+  def total_posts():
+      return Post.published.count()
+  ```
+
+- Use `{% load blog_tags %}` **to make custom template tags available** for the template.
+- Template tags can be used in any template **regardless of the view executed**.
+
+### Creating an inclusion template tag - `@register.inclusion_tag`
+
+- To **render a template** with context variables.
+
+  - **Must** return a dictionary of values (context).
+
+  ```py
+  # Specifies the template that will be rendered with the returned values.
+  # Usage: {% show_latest_posts 3 %}
+  @register.inclusion_tag("blog/post/latest_posts.html")
+  def show_latest_posts(count=5):
+      latest_posts = Post.published.order_by("-publish")[:count]
+      return {"latest_posts": latest_posts}
+  ```
+
+### Creating a template tag that returns a QuerySet - `@register.simple_tag`
+
+- To display the most commented posts.
+
+  - Use `annotate()` to **aggregate** the total number of comments for each post.
+  - Use **`Count` aggregation function** to compute the `total_comments` field.
+
+  ```py
+  # Return a QuerySet
+  # Usage: {% get_most_commented_posts as most_commented_posts %}
+  @register.simple_tag
+  def get_most_commented_posts(count=5):
+      return Post.published.annotate(total_comments=Count("comments")).order_by(
+          "-total_comments"
+      )[:count]
+  ```
+
+- Additional resource: [Custom template tags](https://docs.djangoproject.com/en/5.0/howto/custom-template-tags/)
+
+### Implementing custom template filters
+
+- Syntax:
+  - `{{ variable|my_filter }}`
+  - `{{ variable|my_filter:"foo" }}` - With an **argument**.
+  - `{{ variable|filter1|filter2 }}` - To apply **multiple filters**.
+- E.g. `{{ variable|capfirst }}` - To **capitalize** the first character of the value.
+- **Use case:** Customize formatting.
+- Additional resource: [Built-in template filters](https://docs.djangoproject.com/en/5.0/ref/templates/builtins/#built-in-filter-reference)
+
+### Creating a template filter to support Markdown syntax - `markdown` package
+
+- Markdown is a formatting syntax that's **intended to be converted into HTML**.
+- Custom template filter for **parsing markdown**:
+
+  - **By default**, Django escapes the HTML generated by filters.
+  - Use `mark_safe()` to mark the result **as safe HTML to be rendered**.
+  - Use `mark_safe()` cautiously, only on **content you control**.
+
+  ```py
+  import markdown
+  from django.utils.safestring import mark_safe
+
+  # Function uses a different name to prevent a name clash.
+  # Usage: {{ variable|markdown|truncatewords_html:30 }}
+  @register.filter(name="markdown")
+  def markdown_format(text):
+      return mark_safe(markdown.markdown(text))
+  ```
+
+- **Storing text in Markdown** format in the database, rather than HTML, is a **wise security strategy**.
+- Use `truncatewords_html` filter on HTML content, **avoiding unclosed HTML tags**.
+
+## Adding a sitemap to the site - `Sitemap`
+
+- Django has a **sitemap framework** (`django.contrib.sitemaps`) to generate sitemaps dynamically.
+  - Depends on `django.contrib.sites` to **associate objects to particular websites**.
+- Sitemap is an **XML** file that tells **search engines** your website pages, their relevance, and how frequently they are updated. It makes your site **more visible in search engine rankings**.
+- Project settings:
+
+  ```py
+  # settings.py
+  SITE_ID = 1
+
+  INSTALLED_APPS = [
+      ...
+      "django.contrib.sites",
+      "django.contrib.sitemaps",
+      ...
+  ]
+  ```
+
+- **Implement the sitemap** for post objects:
+
+  - **By default**, Django calls the `get_absolute_url()` on each object.
+  - Can implement `location()` to specify the URL for each object.
+  - `changefreq` and `priority` can be either methods or attributes.
+
+  ```py
+  # sitemaps.py
+  from django.contrib.sitemaps import Sitemap
+  from .models import Post
+
+  class PostSitemap(Sitemap):
+      changefreq = "weekly"  # Change frequency of post pages.
+      priority = 0.9  # Relevance of post pages in the website. (max: 1)
+
+      def items(self):
+          return Post.published.all()  # Objects to include in this sitemap.
+
+      def lastmod(self, obj: Post):
+          return obj.updated
+  ```
+
+- Add a URL for the sitemap.
+
+  ```py
+  from django.contrib.sitemaps.views import sitemap
+  from blog.sitemaps import PostSitemap
+
+  sitemaps = {
+      "posts": PostSitemap,
+  }
+
+  urlpatterns = [
+      ...
+      path(
+          "sitemap.xml",
+          sitemap,
+          {"sitemaps": sitemaps},
+          name="django.contrib.sitemaps.views.sitemap",
+      ),
+  ]
+  ```
+
+- Additional resource: [Sitemap reference](https://docs.djangoproject.com/en/5.0/ref/contrib/sitemaps/)
+
+## Creating feeds for blog posts - `Feed`
+
+- Django has a **built-in syndication feed framework** to dynamically generate **RSS feeds** (similar to creating sitemaps).
+- Web feed (XML) provides users with the **most recently updated content**.
+- Implement a feed:
+
+  ```py
+  # feeds.py
+  from django.contrib.syndication.views import Feed
+  from django.urls import reverse_lazy
+
+  class LatestPostsFeed(Feed):
+      # These attributes correspond to RSS elements.
+      title = "My blog"
+      link = reverse_lazy("blog:post_list")
+      description = "New posts of my blog."
+
+      # Gets objects to be included in the feed.
+      def items(self):
+          return Post.published.all()[:5]
+
+      def item_title(self, item):
+          return item.title
+
+      def item_description(self, item):
+          return truncatewords_html(markdown.markdown(item.body), 30)
+
+      def item_pubdate(self, item):
+          return item.publish
+  ```
+
+- Use a **RSS desktop client** such as Fluent Reader to test the feed.
+- Additional resource: [Syndication feed framework](https://docs.djangoproject.com/en/5.0/ref/contrib/syndication/)
+
+## Adding full-text search to the blog - `django.contrib.postgres`
+
+- **Django ORM** can perform **simple matching operations** such as `contains`.
+- However, you need a **full-text search engine** to perform **complex search lookups**, such as:
+  - By **similarity**.
+  - By **weighting terms** based on **how frequently they appear** in the text or **how important different fields are** (relevancy of the term appearing in the title versus in the body).
+- Django provides a **search functionality built on top of PostgreSQL** database full-text search features.
+
+### Installing PostgreSQL (Docker)
+
+- Commands:
+
+  ```bash
+  # Downloads the PostgreSQL Docker image.
+  $ docker pull postgres:16.2
+
+  # Starts the PostgreSQL Docker container.
+  #
+  # POSTGRES_DB - DB name. If not defined, the POSTGRES_USER sets the DB name.
+  # POSTGRES_USER - Defines a superuser username. It is used
+  #   in conjunction with POSTGRES_PASSWORD.
+  #
+  # -d option - detached mode
+  #
+  # NOTE: Deleting the container will eliminate the database and all the data
+  #   it contains. To persist the data check out Chapter 17.
+  $ docker run --name=blog_db \
+    -e POSTGRES_DB=blog -e POSTGRES_USER=blog -e POSTGRES_PASSWORD=1006 \
+    -p 5432:5432 -d postgres:16.2
+  ```
+
+- Install the `psycopg` PostgreSQL adapter for Python.
+
+### Dumping the existing data - `dumpdata` (For development use only)
+
+- Django has **commands to load and dump data** from the database into files, called **fixtures**.
+- Django supports fixtures in **JSON, XML, or YAML format** (can specify using `--format`).
+- `dumpdata` command dumps data from the database into the **standard output**, serialized in **JSON format by default**.
+- Can **limit the output** to **applications** or **single models** using the `app[.Model] ...` format.
+- `dumpdata` options:
+
+  | Option     | Description                                               |
+  | ---------- | --------------------------------------------------------- |
+  | `--format` | Specifies the **serialization format** (JSON, XML, YAML). |
+  | `--output` | Indicates an output file.                                 |
+  | `--indent` | Specifies the indentation.                                |
+
+- Command:
+
+  - If you get an **encoding error**, use the `-Xutf8` flag to **activate Python UTF-8 mode**.
+
+  ```bash
+  $ python -Xutf8 manage.py dumpdata --indent=2 --output=mysite_data.json
+  ```
+
+### Switching the database in the project
+
+- Add the **PostgreSQL database configuration** to your project settings:
+
+  ```py
+  # settings.py
+  DATABASES = {
+      "default": {
+          "ENGINE": "django.db.backends.postgresql",
+          "NAME": config("DB_NAME"),
+          "USER": config("DB_USER"),
+          "PASSWORD": config("DB_PASSWORD"),
+          "HOST": config("DB_HOST"),
+      }
+  }
+  ```
+
+### Loading the data into the new database - `loaddata`
+
+- To load the data fixtures:
+
+  - If it **fails**, **delete any conflicted data** generated by the `migrate` command.
+
+  ```bash
+  $ python manage.py loaddata mysite_data.json
+  ```
+
+### Simple search lookups - `<field>__search`
+
+- To search against a **single field** using the `search` QuerySet **lookup type**.
+
+  - The query uses **PostgreSQL** to create a **search vector** for the `title` field and a **search query** from the term `django`.
+  - **Space** in the **search query** separate string into **multiple terms**.
+
+  ```py
+  Post.objects.filter(title__search="django")
+  ```
+
+### Searching against multiple fields - `SearchVector`
+
+- Define a `SearchVector` to search against **multiple fields**.
+
+  ```py
+  from django.contrib.postgres.search import SearchVector
+
+  Post.objects.annotate(
+      search=SearchVector("title", "body"),
+  ).filter(search="django")
+  ```
+
+- Full-text search is an **intensive process**. If you are searching for **more than a few hundred rows**, you should define a **functional index that matches the search vector**.
+- Django provides a `SearchVectorField` for models.
+- Additional resource: [Full-text search's performance](https://docs.djangoproject.com/en/5.0/ref/contrib/postgres/search/#performance)
+
+### Building a search view - `post_search()`
+
+- To check whether the search form **is submitted**, look for the `query` parameter in the `request.GET` dictionary.
+
+  ```py
+  # views.py
+  def post_search(request):
+      ...
+
+      if "query" in request.GET:
+          form = SearchForm(request.GET)
+          if form.is_valid():
+              query = form.cleaned_data["query"]
+
+              results = (
+                  Post.published
+                      .annotate(search=SearchVector("title", "body"))
+                      .filter(search=query)
+              )
+
+      ...
+  ```
+
+- Send the search form using the **`GET` method** so that the URL includes the `query` parameter and is **easy to share**.
+
+### Stemming and ranking results - `SearchQuery` and `SearchRank`
+
+- Stemming **reduces words** to their word stem, base, or root form.
+  - Used by **search engines** to **reduce indexed words** to their stem, and to be able to **match derived words**.
+  - Normalize each search token into **a unit of lexical**.
+  - E.g. "music", "musical", and "musicality" would **convert to** "music" when creating a **search query**.
+- Django provides a `SearchQuery` class to translate terms.
+  - **By default**, terms are passed through stemming algorithm.
+- PostgreSQL search engine **removes stop words**, such as "a", "the", "on", and "of".
+- PostgreSQL provides a **ranking function** (`SearchRank`) that **orders results by relevancy** based on how often the query terms appear and how close together they are.
+
+  ```py
+  # views.py
+  from django.contrib.postgres.search import (
+      SearchVector,
+      SearchQuery,
+      SearchRank
+  )
+
+  def post_search(request):
+      ...
+
+      if "query" in request.GET:
+          form = SearchForm(request.GET)
+          if form.is_valid():
+              query = form.cleaned_data["query"]
+
+              search_vector = SearchVector("title", "body")
+              search_query = SearchQuery(query)
+
+              results = (
+                  Post.published
+                      .annotate(
+                          search=search_vector,
+                          rank=SearchRank(search_vector, search_query)
+                      )
+                      .filter(search=search_query)
+                      .order_by("-rank")
+              )
+
+      ...
+  ```
+
+- Additional resource: [English stop words used by PostgreSQL](https://github.com/postgres/postgres/blob/master/src/backend/snowball/stopwords/english.stop)
+
+### Stemming and removing stop words in different languages - `config` attribute
+
+- To set up `SearchVector` and `SearchQuery` to **execute stemming and remove stop words**:
+
+  - Pass a `config` attribute to use a **different search configuration** with different language parsers and dictionaries.
+
+  ```py
+  ...
+  search_vector = SearchVector("title", "body", config="english")
+  search_query = SearchQuery(query, config="english")
+  ...
+  ```
+
+### Weighting queries - `weight` attribute
+
+- Boost specific vectors so that more weight is attributed to them.
+- E.g. To give more relevance to posts that are matched by title:
+
+  ```py
+  # views.py
+  def post_search(request):
+      ...
+
+      if "query" in request.GET:
+          form = SearchForm(request.GET)
+          if form.is_valid():
+              query = form.cleaned_data["query"]
+
+              # Default weights are D, C, B, A (0.1, 0.2, 0.4, 1.0).
+              search_vector = SearchVector("title", weight="A") + \
+                  SearchVector("body", weight="B")
+              search_query = SearchQuery(query)
+
+              results = (
+                  Post.published
+                      .annotate(
+                          search=search_vector,
+                          rank=SearchRank(search_vector, search_query)
+                      )
+                      .filter(rank__gte=0.3)
+                      .order_by("-rank")
+              )
+
+      ...
+  ```
+
+### Searching with trigram similarity
+
+- Trigram is a group of **three consecutive characters**.
+- Measure the similarity of two strings **by counting the number of trigrams** that they share.
+- **Effective** for measuring the similarity of words in **many languages**.
+- Need to install the **`pg_trgm` database extension** to use it.
+
+  1. Create an empty migration.
+     ```bash
+     python manage.py makemigrations --name=trigram_ext --empty blog
+     ```
+  2. Add the `TrigramExtension` operation to the migration.
+
+     - This operation executes the `CREATE EXTENSION pg_trgm` to create the extension in PostgreSQL.
+
+     ```py
+     # blog/migrations/0005_trigram_ext.py
+
+     from django.contrib.postgres.operations import TrigramExtension
+     ...
+
+     class Migration(migrations.Migration):
+         ...
+
+         operations = [
+             TrigramExtension()
+         ]
+     ```
+
+- To search for trigrams:
+
+  ```py
+  # views.py
+  def post_search(request):
+      ...
+
+      if "query" in request.GET:
+          form = SearchForm(request.GET)
+          if form.is_valid():
+              query = form.cleaned_data["query"]
+
+              results = (
+                  Post.published
+                      .annotate(
+                          similarity=TrigramSimilarity("title", query)
+                      )
+                      .filter(similarity__gt=0.1)
+                      .order_by("-similarity")
+              )
+
+      ...
+  ```
+
+- Additional resources:
+  - [Database migrations](https://docs.djangoproject.com/en/5.0/ref/contrib/postgres/operations/)
+  - [Full-text search with PostgreSQL](https://docs.djangoproject.com/en/5.0/ref/contrib/postgres/search/)

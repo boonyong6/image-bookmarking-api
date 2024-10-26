@@ -30,6 +30,7 @@ class PostListView(ListView):
 def post_list(request: HttpRequest, tag_slug=None):
     post_list = Post.published.all()
     tag = None
+
     if tag_slug:
         tag = get_object_or_404(Tag, slug=tag_slug)
         # Use a list and the `__in` field lookup to filter posts by tags
