@@ -1,0 +1,22 @@
+{% load static %}
+<html lang="en">
+  <head>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+
+    <title>
+      {% block title %}
+      {% endblock title %}
+    </title>
+    <link href="{% static "css/base.css" %}" rel="stylesheet">
+  </head>
+  <body>
+    <div id="header">
+      <span class="logo">Bookmarks</span>
+    </div>
+    <div id="content">
+      {% block content %}
+      {% endblock content %}
+    </div>
+  </body>
+</html>
