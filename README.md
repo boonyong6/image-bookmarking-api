@@ -1,0 +1,1 @@
+# django5-by-example-bookmarks
