@@ -44,4 +44,5 @@ urlpatterns = [
     # See authentication URL patterns included at https://github.com/django/django/blob/stable/5.0.x/django/contrib/auth/urls.py
     path("", include("django.contrib.auth.urls")),
     path("", views.dashboard, name="dashboard"),
+    path("register/", views.register, name="register"),
 ]
