@@ -20,5 +20,26 @@ urlpatterns = [
         auth_views.PasswordChangeDoneView.as_view(),  # Display success message after password changed.
         name="password_change_done",
     ),
+    # reset password urls.
+    path(
+        "password-reset/",
+        auth_views.PasswordResetView.as_view(),  # Handles password reset form and sends email.
+        name="password_reset",
+    ),
+    path(
+        "password-reset/done/",
+        auth_views.PasswordResetDoneView.as_view(),
+        name="password_reset_done",
+    ),
+    path(
+        "password-reset/<uidb64>/<token>/",
+        auth_views.PasswordResetConfirmView.as_view(),  # Checks token validity and passes `validlink` context variable.
+        name="password_reset_confirm",
+    ),
+    path(
+        "password-reset/complete/",
+        auth_views.PasswordResetCompleteView.as_view(),
+        name="password_reset_complete",
+    ),
     path("", views.dashboard, name="dashboard"),
 ]
