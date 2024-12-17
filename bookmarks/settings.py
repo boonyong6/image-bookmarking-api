@@ -45,7 +45,7 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",  # Handles the session across requests.
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",  # Associate users with requests using sessions.
+    "django.contrib.auth.middleware.AuthenticationMiddleware",  # Associate users with requests (`request.user`) using sessions.
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -100,6 +100,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Authentication framework
+
+LOGIN_REDIRECT_URL = "dashboard"  # Default redirect URL after successful login.
+LOGIN_URL = "login"
+LOGOUT_URL = "logout"
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
