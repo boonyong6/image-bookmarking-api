@@ -10,6 +10,7 @@
      - Search
      - Post recommendations
   2. **Image bookmarking** (chapters 4 to 7)
+     - Authentication system
   3. **Online shop** (chapters 8 to 11)
   4. **e-learning platform** (chapters 12 to 17)
 
@@ -1793,3 +1794,209 @@ def post_share(request: HttpRequest, post_id):
 - Additional resources:
   - [Database migrations](https://docs.djangoproject.com/en/5.0/ref/contrib/postgres/operations/)
   - [Full-text search with PostgreSQL](https://docs.djangoproject.com/en/5.0/ref/contrib/postgres/search/)
+
+# 4 Building a Social Website
+
+- Features to build:
+  - Authentication - login, logout
+  - Password management - password change, password reset
+  - User registration
+  - Profile editing (extending the user model with a custom profile model)
+- Authentication, password management, and user registration can be implemented using **Django authentication framework** (`django.contrib.auth` package).
+
+## Functional overview
+
+![4-1-diagram-of-functionalities-built-in-chapter-4](images/4-1-diagram-of-functionalities-built-in-chapter-4.png)
+
+## Creating a social website project
+
+### Starting the social website project
+
+- Place your app (e.g. `account`) **before other installed apps**, allowing **override authentication templates**:
+
+  - Django looks for templates **by order of appearance** in the `INSTALLED_APPS`.
+  - `django.contrib.admin` includes standard authentication templates.
+
+  ```py
+  # settings.py
+  INSTALLED_APPS = [
+    "account.apps.AccountConfig",  # <--
+    "django.contrib.admin",
+    ...
+  ]
+  ```
+
+## Using the Django authentication framework - `django.contrib.auth`
+
+- Can handle user authentication, sessions, permissions, and user groups.
+- Includes views such as logging in, logging out, password change, and password reset.
+- It's part of the default settings of Django projects, which includes:
+  - `INSTALLED_APPS` - `django.contrib.auth`
+  - `MIDDLEWARE`:
+    - `SessionMiddleware` - Handles the session across requests.
+    - `AuthenticationMiddleware` - Associate users with requests (`request.user`) using sessions.
+- `django.contrib.auth.models` - `User`, `Group`, `Permission` (flags)
+- Provides URL patterns for the authentication views.
+
+  - Additional resource: [Authentication URL patterns](https://github.com/django/django/blob/stable/5.0.x/django/contrib/auth/urls.py)
+
+  ```py
+  # account/urls.py
+  urlpatterns = [
+      path("", include("django.contrib.auth.urls")),
+      ...
+  ]
+  ```
+
+### Creating a login view (Custom)
+
+- Login flow:
+  1. Show login form.
+  2. Get username and password.
+  3. Authenticate user.
+  4. Check is user active.
+  5. Log user in and start authenticated session.
+- In `LoginForm`, `forms.PasswordInput` widget is used to render `password` HTML element (`type="password"`).
+- Functions in `django.contrib.auth`:
+
+  - `login()` - Sets the user in the current **session**.
+  - `authenticate()` - Verifies the user's **credentials**.
+
+  ```py
+  # views.py
+  def user_login(request):
+      if request.method == "POST":
+          form = LoginForm(request.POST)
+          if form.is_valid():
+              cd = form.cleaned_data
+              user = authenticate(  # <--
+                  request,
+                  username=cd["username"],
+                  password=cd["password"],
+              )
+              if user is not None:
+                  if user.is_active:
+                      login(request, user)  # <--
+      ...
+  ```
+
+### Using Django's built-in authentication views - `django.contrib.auth.views`
+
+- Includes **forms** and **views**.
+- `django.contrib.auth.views`:
+
+  | View                           | Description                                                        |
+  | ------------------------------ | ------------------------------------------------------------------ |
+  | `LoginView`                    | Handles **login form** and **login**.                              |
+  | `LogoutView`                   | Handles **logout**.                                                |
+  | **To handle password changes** |
+  | `PasswordChangeView`           | Handles **password change form**.                                  |
+  | `PasswordChangeDoneView`       | Password changed's **success view**.                               |
+  | **To reset password**          |
+  | `PasswordResetView`            | Generates **one-time-use link with token** and sends it via email. |
+  | `PasswordResetDoneVIew`        | Password reset link sent's **success view**.                       |
+  | `PasswordResetConfirmView`     | Checks **token validity** in URL and handles set a new password.   |
+  | `PasswordResetCompleteView`    | Password reset's **success view**.                                 |
+
+- These views **use default values that can be overriden**, such as location of the template or form to be used.
+- Additional resource: [Built-in authentication views](https://docs.djangoproject.com/en/5.1/topics/auth/default/#all-authentication-views)
+
+### Login and logout views
+
+- Default path for **custom** authentication templates: `account/templates/registration`
+- `LoginView` uses the `AuthenticationForm` located at `django.contrib.auth.forms` by default.
+- In `login.html`, a hidden HTML `<input>` is added to submit the `next` value (must be a URL).
+  - `next` is the **redirect URL** for successful login.
+  - E.g. ` http://127.0.0.1:8000/account/login/?next=/account/`
+- Use `@login_required` on views that require the user to be logged in.
+- **Settings** to add in: `LOGIN_REDIRECT_URL`, `LOGIN_URL`, `LOGOUT_URL`
+- `request` object contains a `User` object (`request.user`) **even if the user is not authenticated** (an instance of `AnonymousUser`).
+- Use `request.user.is_authenticated` to check if the user is authenticated.
+- `LogoutView` requires `POST` requests.
+
+## User registration and user profiles
+
+### User registration - `account.views.register`
+
+- `UserRegistrationForm` - A **model form** for the user model.
+- To keep your code generic:
+  - Use `django.contrib.auth.get_user_model()` to retrieve the user model (could be a custom model) dynamically.
+  - Use `AUTH_USER_MODEL` when defining a model's relationship.
+- In model form, implement **field validation** such as `clean_password2()` to check that both passwords are the same.
+  - It is executed when `is_valid()` is called.
+  - Use field-specific validation such as `clean_<field>()` instead of overriding the `clean()`, to avoid overriding other field-specific checks.
+- Django provides a `UserCreationForm` that is similar to our custom view (`account.views.register`).
+
+  ```py
+  # views.py
+  def register(request: HttpRequest):
+      if request.method == "POST":
+          user_form = UserRegistrationForm(request.POST)
+          if user_form.is_valid():
+              # Create a new user object but avoid saving it yet
+              #   because we need to call a separate method to hash
+              #   and set the password.
+              new_user = user_form.save(commit=False)  # <--
+              # Set the chosen password.
+              new_user.set_password(  # <--
+                  user_form.cleaned_data["password"]
+              )
+              # Save the User object.
+              new_user.save()
+      ...
+  ```
+
+- Password hashing:
+  - By default, `PBKDF2` hashing algorithm with a `SHA246` hash is used to store all passwords.
+  - `PASSWORD_HASHERS` defines the password hashers that the project supports.
+  - Django uses the first entry of the hashers to hash all passwords, and uses the rest to check existing passwords.
+  - Additional resource: [Passwords in Django](https://docs.djangoproject.com/en/5.1/topics/auth/passwords/)
+
+### Extending the user model
+
+- A simple way to extend is by creating a **profile model** that contains a **one-to-one relationship** with the Django user model.
+
+  ```py
+  # models.py
+  class Profile(models.Model):
+      # Associates profiles with users.
+      user: AbstractUser = models.OneToOneField(  # <--
+          settings.AUTH_USER_MODEL, on_delete=models.CASCADE
+      )
+      # `blank=True` makes fields optional.
+      # `null=True` allows `null` values.
+      date_of_birth = models.DateField(blank=True, null=True)
+      ...
+  ```
+
+### Installing `Pillow` and serving media files
+
+- `Pillow` is the de facto standard library for image processing.
+- Django is **inefficient** at serving static files. **Never** serve your static files with Django in production.
+
+### Managing profile
+
+- A user profile is created when a user is created.
+
+  ```py
+  # views.py
+  def register(request: HttpRequest):
+      if request.method == "POST":
+          user_form = UserRegistrationForm(request.POST)
+          if user_form.is_valid():
+              # Create a new user.
+              ...
+              # Create the user profile.
+              Profile.objects.create(user=new_user)  # <--
+      ...
+  ```
+
+- Users created via the **admin site** won't automatically get an associated `Profile` object.
+  - Use **Django signals** (Chapter 7) to force profile creation for all users.
+- In user edit template, `enctype="multipart/form-data"` is added to the `<form>` **to enable file uploads**.
+
+### Using a custom user model
+
+- Custom `User` class should inherit from `AbstractUser` class.
+- Gives more **flexibility**, but it might result in more **difficult integration with pluggable applications** that interact directly with `auth` user model.
+- Additional resource: [Custom user model](https://docs.djangoproject.com/en/5.1/topics/auth/customizing/#substituting-a-custom-user-model)
