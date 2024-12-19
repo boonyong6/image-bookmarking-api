@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 
+from decouple import config
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -109,11 +111,17 @@ LOGIN_REDIRECT_URL = "dashboard"  # Default redirect URL after successful login.
 LOGIN_URL = "login"
 LOGOUT_URL = "logout"
 
+# Social authentication
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = config("GOOGLE_OAUTH2_KEY")
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config("GOOGLE_OAUTH2_SECRET")
+
 # User credentials will be checked using `ModelBackend`, if no user is returned,
 #   credentials will be checked using `EmailAuthBackend`.
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "account.authentication.EmailAuthBackend",
+    "social_core.backends.google.GoogleOAuth2",
 ]
 
 # Internationalization
