@@ -1885,18 +1885,18 @@ def post_share(request: HttpRequest, post_id):
 - Includes **forms** and **views**.
 - `django.contrib.auth.views`:
 
-  | View                           | Description                                                        |
-  | ------------------------------ | ------------------------------------------------------------------ |
-  | `LoginView`                    | Handles **login form** and **login**.                              |
-  | `LogoutView`                   | Handles **logout**.                                                |
-  | **To handle password changes** |
-  | `PasswordChangeView`           | Handles **password change form**.                                  |
-  | `PasswordChangeDoneView`       | Password changed's **success view**.                               |
-  | **To reset password**          |
-  | `PasswordResetView`            | Generates **one-time-use link with token** and sends it via email. |
-  | `PasswordResetDoneVIew`        | Password reset link sent's **success view**.                       |
-  | `PasswordResetConfirmView`     | Checks **token validity** in URL and handles set a new password.   |
-  | `PasswordResetCompleteView`    | Password reset's **success view**.                                 |
+  | View                              | Description                                                        |
+  | --------------------------------- | ------------------------------------------------------------------ |
+  | `LoginView`                       | Handles **login form** and **login**.                              |
+  | `LogoutView`                      | Handles **logout**.                                                |
+  | **To handle password changes...** |
+  | `PasswordChangeView`              | Handles **password change form**.                                  |
+  | `PasswordChangeDoneView`          | Password changed's **success view**.                               |
+  | **To reset password...**          |
+  | `PasswordResetView`               | Generates **one-time-use link with token** and sends it via email. |
+  | `PasswordResetDoneVIew`           | Password reset link sent's **success view**.                       |
+  | `PasswordResetConfirmView`        | Checks **token validity** in URL and handles set a new password.   |
+  | `PasswordResetCompleteView`       | Password reset's **success view**.                                 |
 
 - These views **use default values that can be overriden**, such as location of the template or form to be used.
 - Additional resource: [Built-in authentication views](https://docs.djangoproject.com/en/5.1/topics/auth/default/#all-authentication-views)
@@ -1976,7 +1976,7 @@ def post_share(request: HttpRequest, post_id):
 
 ### Managing profile
 
-- A user profile is created when a user is created.
+- To create a user profile when creating a user:
 
   ```py
   # views.py
