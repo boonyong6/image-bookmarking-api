@@ -106,6 +106,13 @@ LOGIN_REDIRECT_URL = "dashboard"  # Default redirect URL after successful login.
 LOGIN_URL = "login"
 LOGOUT_URL = "logout"
 
+# User credentials will be checked using `ModelBackend`, if no user is returned,
+#   credentials will be checked using `EmailAuthBackend`.
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "account.authentication.EmailAuthBackend",
+]
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
