@@ -2000,3 +2000,166 @@ def post_share(request: HttpRequest, post_id):
 - Custom `User` class should inherit from `AbstractUser` class.
 - Gives more **flexibility**, but it might result in more **difficult integration with pluggable applications** that interact directly with `auth` user model.
 - Additional resource: [Custom user model](https://docs.djangoproject.com/en/5.1/topics/auth/customizing/#substituting-a-custom-user-model)
+
+# 5 Implementing Social Authentication
+
+- Features to build:
+  - Display messages to provide feedback using the **messages framework**.
+  - **Custom authentication backend** (`EmailAuthBackend`) - To authenticate with **email address**.
+    - Add validation to ensure email address is unique.
+  - Add social authentication (Google) with **Python Social Auth**.
+  - Run **dev server with HTTPS** using **Django Extensions**.
+  - Customize **social authentication pipeline** to create profile.
+
+## Functional overview
+
+![5-1-diagram-of-functionalities-built-in-chapter-5](images/5-1-diagram-of-functionalities-built-in-chapter-5.png)
+
+## Using the messages framework - `django.contrib.messages`
+
+- Can display **one-time notifications** to **provide feedback** on users' actions.
+- It's part of the default settings of Django projects, which includes:
+  - `INSTALLED_APPS` - `django.contrib.messages`
+  - `MIDDLEWARE` - `django.contrib.messages.middleware.MessageMiddleware`
+  - `TEMPLATE.OPTIONS.context_processors`
+    - **Context processor** is a function that inject relevant context variables into templates.
+    - `django.contrib.messages.context_processors.messages` - Adds `messages` variable to request context.
+- When messages are added, they are **stored in cookie** by default (falling back to session storage).
+- To add messages:
+
+  ```py
+  from django.contrib import messages
+  messages.error(request, "Something went wrong")
+  ```
+
+- `messages` methods:
+
+  - `success()`
+  - `info()`
+  - `warning()`
+  - `error()`
+  - `debug()` - Will be removed and ignored in production.
+  - `add_message()`
+
+- Additional resource: [Messages framework](https://docs.djangoproject.com/en/5.1/ref/contrib/messages/)
+
+## Building a custom authentication backend - `EmailAuthBackend`
+
+- `AUTHENTICATION_BACKENDS` defines a list of auth backends available in the project.
+
+  - Default value - `["django.contrib.auth.backends.ModelBackend"]`
+  - **Order** of the backends matters.
+
+  ```py
+  # settings.py
+
+  # User credentials will be checked using `ModelBackend`, if no user
+  #   is returned, credentials will be checked using `EmailAuthBackend`.
+  AUTHENTICATION_BACKENDS = [
+      "django.contrib.auth.backends.ModelBackend",
+      "account.authentication.EmailAuthBackend",  # <--
+  ]
+  ```
+
+- `ModelBackends` authenticates users using the `User` model.
+- When `django.contrib.auth.authenticate()` is executed, the user will be authenticated **against each of the backends** until one of the backends successfully authenticates the user.
+- Authentication backend is a **class** that provides **two methods**:
+  1. `authenticate()`
+  2. `get_user()`
+- See [authentication.py](bookmarks/account/authentication.py).
+- Additional resource: [Customize authentication](https://docs.djangoproject.com/en/5.0/topics/auth/customizing/#other-authentication-sources)
+
+### Preventing users from using an existing email address - `clean_email()`
+
+- Built-in `User` model **doesn't** prevent creating users with the same email address.
+- By adding email validation to **forms**. See [forms.py](bookmarks/account/forms.py).
+
+## Adding social authentication to your site - Python Social Auth
+
+- To authenticate using users' existing account (SSO).
+- Social auth uses OAuth 2.0 (Open Authorization) for authorization.
+- Social login URL patterns:
+
+  ```py
+  # urls.py
+  urlpatterns = [
+      ...,
+      path(
+          "social-auth/",
+          include("social_django.urls", namespace="social")
+      ),
+  ]
+  ```
+
+- Google allows the redirection to `localhost` after successful authentication, but **other social services expect a domain name** for the URL redirect.
+
+  - We can simulate a real environment by **serving a site under a domain name (e.g. mysite.com) in local machine** via the `hosts` file.
+  - Add the local domain name to `ALLOWED_HOSTS` (Django uses this setting to prevent HTTP host header attacks).
+
+  ```py
+  # settings.py
+  ALLOWED_HOSTS = ["mysite.com", "localhost", "127.0.0.1"]
+  ```
+
+- Additional resource: [Python Social Auth's supported backends](https://python-social-auth.readthedocs.io/en/latest/backends/index.html#supported-backends)
+
+### Running the development server through HTTPS - `runserver_plus`
+
+- Django dev server is **not able** to serve the site through HTTPS.
+- **Packages required** to serve the site through HTTPS:
+
+  - `django-extensions`:
+    - Includes many interesting tools and features.
+    - We'll use its **RunServerPlus** extension.
+
+  ```py
+  # settings.py
+  INSTALLED_APPS =[
+      ...,
+      "django_extensions",
+  ]
+  ```
+
+  - `werkzeug` - Contains a debugger layer required by the RunServerPlus extension.
+  - `pyOpenSSL` - RunServerPlus requires it to use its SSL/TLS feature.
+
+- To run dev server thru HTTPS:
+
+  - Django Extensions will generate a key and certificate automatically.
+
+  ```bash
+  python manage.py runserver_plus --cert-file cert.crt
+  ```
+
+- Addition resource: [Django Extensions](https://django-extensions.readthedocs.io/en/stable/)
+
+### Authentication using Google
+
+- Refer to the book/docs for detailed setup steps.
+- After successful authorization, users will be logged in and redirected to `LOGIN_REDIRECT_URL`.
+- Additional resource: [Google OAuth2](https://developers.google.com/identity/protocols/oauth2)
+
+### Creating a profile for users that register with social authentication
+
+- **Python Social Auth** uses a **pipeline** consisting of a set of functions that are executed in a specific order during the authentication flow.
+- Can add a new function to the pipeline to create profile.
+
+  - Pipeline function takes **two required arguments** - `backend` and `user`
+
+  ```py
+  # authentication.py
+  # `backend` is the social auth backend used.
+  def create_profile(backend, user, *args, **kwargs):
+      Profile.objects.get_or_create(user=user)
+
+  # settings.py
+  SOCIAL_AUTH_PIPELINE = [
+      ...
+      "social_core.pipeline.user.create_user",
+      "account.authentication.create_profile",  # <--
+      "social_core.pipeline.social_auth.associate_user",
+      ...
+  ]
+  ```
+
+- Additional resource: [Authentication pipeline](https://python-social-auth.readthedocs.io/en/stable/pipeline.html)
