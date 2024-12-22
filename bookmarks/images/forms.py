@@ -18,18 +18,18 @@ class ImageCreateForm(forms.ModelForm):
 
     def clean_url(self):
         url: str = self.cleaned_data["url"]
+        url = url.split("?")[0]  # To discard any querystring.
         valid_extensions = ["jpg", "jpeg", "png"]
         extension = url.rsplit(".", 1)[1].lower()  # Splitting starts at the end.
         if extension not in valid_extensions:
             raise forms.ValidationError(
-                "The given URL does not match valid image extensions."
+                f"The given URL does not match valid image extensions. {extension}"
             )
         return url
 
     def save(self, force_insert=False, force_update=False, commit=True):
         image: Image = super().save(commit=False)
-        image_url: str = self.cleaned_data["url"]
-        print(f"[DEBUG] Isn't these two the same? {image.url=}, {image_url=}")
+        image_url: str = image.url
         name = slugify(image.title)
         extension = image_url.rsplit(".", 1)[1].lower()
         image_name = f"{name}.{extension}"
