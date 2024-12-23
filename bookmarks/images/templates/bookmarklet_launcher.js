@@ -1,15 +1,14 @@
 (function () {
   if (!window.bookmarklet) {
-    window.bookmarkletSiteUrl = '//{{ host }}/';
+    window.bookmarklet = {};
+    window.bookmarklet.siteUrl = '//{{ host }}/';
 
     const bookmarkletScript = document.createElement('script');
     bookmarkletScript.src =
-      window.bookmarkletSiteUrl + 'static/js/bookmarklet.js?r=' +
+      window.bookmarklet.siteUrl + 'static/js/bookmarklet.js?r=' +
       Math.floor(Math.random() * 999999999999999); /* Prevents loading `bookmarklet.js` from browser cache. */
     document.body.appendChild(bookmarkletScript);
-    
-    window.bookmarklet = true;
   } else {
-    bookmarkletLaunch();
+    window.bookmarklet.launch();
   }
 })();
