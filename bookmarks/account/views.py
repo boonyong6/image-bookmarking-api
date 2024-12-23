@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import AbstractUser
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
+from django.template.loader import render_to_string
+from django.utils.html import escape
 
 from .forms import LoginForm, ProfileEditForm, UserEditForm, UserRegistrationForm
 from .models import Profile
@@ -35,12 +37,17 @@ def user_login(request: HttpRequest):
 
 @login_required
 def dashboard(request):
+    bookmarklet_launcher = render_to_string(
+        "bookmarklet_launcher.js", {"host": config("HOST")}
+    )
+    bookmarklet_launcher = escape(bookmarklet_launcher)
+
     return render(
         request,
         "account/dashboard.html",
         {
             "section": "dashboard",
-            "host": config("HOST"),
+            "bookmarklet_launcher": bookmarklet_launcher,
         },
     )
 
