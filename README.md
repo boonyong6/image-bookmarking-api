@@ -994,11 +994,11 @@ def post_share(request: HttpRequest, post_id):
 
 - **Template tags** and **template variable** used:
 
-  | Component          | Description                                                                                                                                                  |
-  | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-  | `{% if sent %}`    | - To **differentiate** whether to display the **form** or the **success message**.                                                                           |
-  | `{{ form.as_p }}`  | - To render **form fields** using `<p>` (`as_p` is a **method**).<br />- Use `as_ul` to render as an `<ul>`.<br />- Use `as_table` to render as a `<table>`. |
-  | `{% csrf_token %}` | - To add a hidden field with a token **to avoid CSRF attacks**.<br />- **By default**, Django checks for the CSRF token in all `POST` requests.              |
+  | Component          | Description                                                                                                                                                                                      |
+  | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+  | `{% if sent %}`    | - To **differentiate** whether to display the **form** or the **success message**.                                                                                                               |
+  | `{{ form.as_p }}`  | - To render **form fields** using `<p>` (`as_p` is a **method**).<br />- Use `as_ul` to render as an `<ul>`.<br />- Use `as_table` to render as a `<table>`.                                     |
+  | `{% csrf_token %}` | - To add a hidden field with a token **to avoid CSRF attacks**.<br />- **By default**, Django checks for the CSRF token in all `POST` requests.<br />- **Changed** each time a user **logs in**. |
 
 - To test the Django form validation, you can **skip the browser form validation** by:
   ```html

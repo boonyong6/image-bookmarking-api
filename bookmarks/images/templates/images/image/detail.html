@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load static %}
+
 {% block title %}
   {{ image.title }}
 {% endblock title %}
@@ -10,15 +12,29 @@
   <a href="{{ image.image.url }}" target="_blank">
     <img src="{% thumbnail image.image 300x0 %}" class="image-detail">
   </a>
-  {% with total_likes=image.users_like.count %}
+  {% with total_likes=image.users_like.count users_like=image.users_like.all %}
     <div class="image-info">
       <div>
-        <span class="count">{{ total_likes }} like{{ total_likes|pluralize }}</span>
+        <span class="count">
+          <span class="total">{{ total_likes }}</span>
+          like{{ total_likes|pluralize }}
+        </span>
+        {% comment %} Use data-* attributes to store request params. {% endcomment %}
+        <a href="#"
+           data-id="{{ image.id }}"
+           data-action="{% if request.user in users_like %}un{% endif %}like"
+           class="like button">
+          {% if request.user not in users_like %}
+            Like
+          {% else %}
+            Unlike
+          {% endif %}
+        </a>
       </div>
       {{ image.description|linebreaks }}
     </div>
     <div class="image-likes">
-      {% for user in image.users_like.all %}
+      {% for user in users_like %}
         <div>
           {% if user.profile.photo %}<img src="{{ user.profile.photo.url }}">{% endif %}
           <p>{{ user.first_name }}</p>
@@ -29,3 +45,8 @@
     </div>
   {% endwith %}
 {% endblock content %}
+
+{% block script %}
+  <div class="template-data" data-url="{% url "images:like" %}"></div>
+  <script type="module" src="{% static "js/image-detail.js" %}"></script>
+{% endblock script %}
