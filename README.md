@@ -271,6 +271,7 @@ class Post(models.Model):
 - Fields that **create an index by default**:
   - `SlugField`
   - `ForeignKey`
+  - Fields with `unique=True`
 - To apply the **pending migrations** of all **activated apps** (`INSTALLED_APPS`):
   ```bash
   $ python manage.py migrate
@@ -2163,3 +2164,183 @@ def post_share(request: HttpRequest, post_id):
   ```
 
 - Additional resource: [Authentication pipeline](https://python-social-auth.readthedocs.io/en/stable/pipeline.html)
+
+# 6 Sharing Content on Your Website
+
+- Features to build:
+  - JavaScript **bookmarklet** to bookmark/share images from other sites.
+    - Display an **image selector** on top of any website.
+  - Like/unlike image via **AJAX**.
+    - **Many-to-many** relationship (`Image.users_like`) - One image can be liked by many users, and one user can like many images.
+  - **Download and save images** from other sites using a **model form** (`ImageCreateForm`) with a customized `save()` method.
+  - Generate **image thumbnails** using `easy-thumbnails` (image optimization).
+  - Infinite scroll pagination.
+
+## Functional overview
+
+![6-1-diagram-of-functionalities-built-in-chapter-6](images/6-1-diagram-of-functionalities-built-in-chapter-6.png)
+
+## Creating an image bookmarking website
+
+### Building the image model - `Image`
+
+- **Good practice:** Create indexes for fields that you frequently query using `filter()`, `exclude()`, or `order_by()`.
+- Additional resource: [Database indexes](https://docs.djangoproject.com/en/5.1/ref/models/options/#django.db.models.Options.indexes)
+- Override `save()` to use `slugify()` to generate the `slug` field if not specified:
+
+  ```py
+  from django.utils.text import slugify
+
+  class Image(models.Model):
+      ...
+
+      def save(self, *args, **kwargs):
+          if not self.slug:  # <--
+              self.slug = slugify(self.title)  # <--
+          super().save(*args, **kwargs)
+  ```
+
+### Creating many-to-many relationships - `Image.users_like`
+
+- `ManyToManyField` to store users who like an image:
+
+  ```py
+  class Image(models.Model):
+      ...
+
+      users_like = models.ManyToManyField(  # <--
+          settings.AUTH_USER_MODEL,
+          related_name="images_liked",
+          blank=True
+      )
+  ```
+
+  ![6-2-intermediary-database-table-for-the-many-to-many-relationship](images/6-2-intermediary-database-table-for-the-many-to-many-relationship.png)
+
+- `ManyToManyField` can be defined in **either** of the two related models.
+- Additional resource: [Many-to-many relationships](https://docs.djangoproject.com/en/5.1/topics/db/examples/many_to_many/)
+
+## Posting content from other websites
+
+- `url` and `title` attributes of the `ImageCreateForm` will be provided with an **Image selector bookmarklet** that extracts the **image URL** and **document title** from other sites.
+
+  ```py
+  # forms.py
+  class ImageCreateForm(forms.ModelForm):
+      class Meta:
+          model = Image
+          fields = ["title", "url", "description"]
+          widgets = {
+              "url": forms.HiddenInput,  # <--
+          }
+  ```
+
+### Cleaning form fields - `clean_url()`
+
+- To validate that the filename in the image URL ends with supported extensions (`.jpg`, `.jpeg`, `.png`).
+
+### Installing the Requests library - `requests`
+
+- Use it to **download** the image file by its URL.
+- Additional resource: [Requests library](https://requests.readthedocs.io/en/stable/)
+
+### Overriding `save()` method of a ModelForm
+
+```py
+# forms.py
+class ImageCreateForm(forms.ModelForm):
+    ...
+
+    def save(self, force_insert=False, force_update=False, commit=True):
+        image: Image = super().save(commit=False)
+        image_url: str = image.url
+        name = slugify(image.title)
+        extension = image_url.rsplit(".", 1)[1].lower()
+        image_name = f"{name}.{extension}"
+
+        # Download image from the given URL.
+        response = requests.get(image_url)
+        # `save=False` prevents the object (`image`)
+        #   from being saved to the db.
+        image.image.save(
+            image_name,
+            ContentFile(response.content),
+            save=False)
+
+        # To maintain the same behavior as the original `save()`.
+        if commit:
+            image.save()
+        return image
+```
+
+### Building a bookmarklet with JavaScript
+
+- Bookmarklet is a **bookmark** (`href="javascript:..."`) stored in a web browser that **contains JavaScript** code.
+  - Useful for building tools that **interact with other websites**. Works by manipulating the DOM (e.g. append `<script>`).
+  - Simple alternative to browser extensions.
+- **To update the bookmarklet**, we can have the user bookmark a **launcher script** (`bookmarklet_launcher.js`) that dynamically loads the **main script** (`bookmarklet.js`).
+- See [bookmarklet_launcher.js](bookmarks/images/templates/bookmarklet_launcher.js) and [bookmarklet.ts](bookmarks/vite/src/bookmarklet.ts).
+- For **security** reasons, browser will prevent you from running the bookmarklet over HTTP on a site served through HTTPS.
+- To get a **free trusted certificate** for a real domain, you can use the [Let's Encrypt](https://letsencrypt.org/) service.
+
+## Creating image thumbnails using `easy-thumbnails`
+
+- To display optimized images in uniform manner.
+- `easy-thumbnails` provides:
+
+  - `{% thumbnail %}` to generate thumbnails in templates.
+    - Can use a different `quality` value, such as `{% thumbnail image.image 300x0 quality=100 %}`.
+  - Custom `ImageField` to define thumbnails in models.
+  - **Options** to customize thumbnails, such as **cropping algorithms** (e.g. `crop="smart"`) and different effects.
+
+  ```django
+  <!-- images/image/detail.html -->
+  {% load thumbnail %}
+  <a href="{{ image.image.url }}">
+    <!-- Thumbnail will be created when the page first loads,
+    and stored in the same directory as the original file. -->
+    <img src="{% thumbnail image.image 300x0 %}" class="image-detail">
+  </a>
+  ```
+
+- Can add `THUMBNAIL_DEBUG = True` to the `settings.py` for debugging.
+- Additional resource: [easy-thumbnails](https://easy-thumbnails.readthedocs.io/en/stable/)
+
+## Adding asynchronous actions with JavaScript - `AJAX`
+
+- Perform **like/unlike actions** via `AJAX` with [Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch).
+- HTTP-related view decorators (`django.views.decorators.http`):
+  - `@require_POST`
+  - `@require_GET`
+  - `@require_http_methods` - Can pass a list of allowed methods.
+- Useful methods of many-to-many managers (e.g. `users_like` attribute)
+
+  | Method     | Description                                                                        |
+  | ---------- | ---------------------------------------------------------------------------------- |
+  | `add()`    | If an object that is **already present** is passed, it **will not be duplicated.** |
+  | `remove()` | If an object that is **not in the related object set, nothing will happen**.       |
+  | `clear()`  | **Removes all** objects from the related object set.                               |
+
+### Loading JavaScript on the DOM
+
+- In some cases, it is useful to **generate JavaScript code dynamically using Django template**.
+
+### Cross-site request forgery (CSRF) for HTTP requests in JavaScript
+
+- Can use `X-CSRFToken` request header to set the CSRF token.
+- We'll use the [JavaScript Cookie](https://github.com/js-cookie/js-cookie) library to get the CSRF token from cookies.
+- CSRF token **must be included** in all requests that use **unsafe HTTP methods**, such as `POST` or `PUT`.
+- Additional reference: [Django's CSRF protection and AJAX](https://docs.djangoproject.com/en/5.1/ref/csrf/#ajax)
+
+### Performing HTTP requests with JavaScript
+
+- See [image-detail.ts](bookmarks/vite/src/image-detail.ts). Notes:
+  - Use `FormData` object to represent form fields (`id` and `action` parameter).
+  - Additional resource: [`Response` object](https://developer.mozilla.org/en-US/docs/Web/API/Response)
+
+### Adding infinite scroll pagination to the image list
+
+- Implement a **image list view** that will **handle both** browser requests and AJAX requests, and use two different templates.
+- Use `images_only` HTTP GET parameter to distinguish AJAX requests.
+- Raise `EmptyPage` exception if the requested page is **out of range**.
+- Script that implements infinite scrolling - [image-list.ts](bookmarks/vite/src/image-list.ts)

@@ -39,6 +39,7 @@ class ImageCreateForm(forms.ModelForm):
         # `save=False` prevents the object (`image`) from being saved to the db.
         image.image.save(image_name, ContentFile(response.content), save=False)
 
+        # To maintain the same behavior as the original `save()`.
         if commit:
             image.save()
         return image
