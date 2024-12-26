@@ -1,8 +1,5 @@
 import { onDomReady } from "./base";
-
-type SimpleResponse = {
-  status: "ok" | "error";
-};
+import { SimpleResponse } from "./types";
 
 onDomReady(({ csrfToken }) => {
   const templateData =
