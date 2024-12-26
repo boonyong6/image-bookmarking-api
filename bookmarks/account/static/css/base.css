@@ -313,6 +313,8 @@ a.follow {
 img.user-detail {
   border-radius: 50%;
   float: left;
+  width: 180px;
+  height: 180px;
 }
 .profile-info {
   float: left;

@@ -1,15 +1,17 @@
 from decouple import config
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import AbstractUser
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 from django.utils.html import escape
 
 from .forms import LoginForm, ProfileEditForm, UserEditForm, UserRegistrationForm
 from .models import Profile
+
+User = get_user_model()
 
 
 # Unused function (`django.contrib.auth`'s built-in views are used instead).
@@ -91,4 +93,20 @@ def edit(request: HttpRequest):
         request,
         "account/edit.html",
         {"user_form": user_form, "profile_form": profile_form},
+    )
+
+
+@login_required
+def user_list(request: HttpRequest):
+    users = User.objects.filter(is_active=True)
+    return render(
+        request, "account/user/list.html", {"section": "people", "users": users}
+    )
+
+
+@login_required
+def user_detail(request: HttpRequest, username):
+    user = get_object_or_404(User, username=username, is_active=True)
+    return render(
+        request, "account/user/detail.html", {"section": "people", "user": user}
     )

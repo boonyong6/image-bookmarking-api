@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 
 from decouple import config
+from django.conf import settings
+from django.urls import reverse_lazy
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -171,3 +173,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # SMTP configuration
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+# Canonical URL - `get_absolute_url()`
+# https://docs.djangoproject.com/en/5.1/ref/settings/#absolute-url-overrides
+
+ABSOLUTE_URL_OVERRIDES = {
+    # "app_label.model_name" - Model name must be all lowercase.
+    "auth.user": lambda user: reverse_lazy("user_detail", args=[user.username]),
+}
