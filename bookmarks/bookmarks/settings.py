@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "social_django",
     "django_extensions",
     "easy_thumbnails",
+    "django_browser_reload",
     "images.apps.ImagesConfig",
 ]
 
@@ -55,6 +56,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",  # Associate users with requests (`request.user`) using sessions.
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_browser_reload.middleware.BrowserReloadMiddleware",  # Should be listed after any others that encode the response, such as Django's `GZipMiddleware`.
 ]
 
 ROOT_URLCONF = "bookmarks.urls"
