@@ -1,0 +1,15 @@
+{
+  "name": "bookmarks",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently --names \"django,vite\" --prefix-colors \"green.bold,yellow.bold\" --kill-others \"python manage.py runserver_plus --cert-file cert.crt\" \"(cd vite && npm run build -- --watch)\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Boon Yong",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
