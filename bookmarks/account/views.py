@@ -1,9 +1,13 @@
+from typing import cast
+
+from actions.models import Action
 from actions.utils import create_action
 from decouple import config
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import AbstractUser
+from django.db.models.query import QuerySet
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
@@ -46,12 +50,21 @@ def dashboard(request):
     )
     bookmarklet_launcher = escape(bookmarklet_launcher)
 
+    # Display all actions by default.
+    actions = Action.objects.exclude(user=request.user)
+    following_ids = cast(QuerySet, request.user.following).values_list("id", flat=True)
+    if following_ids:
+        # If user is following others, retrieve only their actions.
+        actions = actions.filter(user_id__in=following_ids)
+    actions = actions[:10]
+
     return render(
         request,
         "account/dashboard.html",
         {
             "section": "dashboard",
             "bookmarklet_launcher": bookmarklet_launcher,
+            "actions": actions,
         },
     )
 
