@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "easy_thumbnails",
     "django_browser_reload",
     "images.apps.ImagesConfig",
+    "actions.apps.ActionsConfig",
 ]
 
 MIDDLEWARE = [
