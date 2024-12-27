@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     "account.apps.AccountConfig",  # Place before `django.contrib.admin` to override its templates.
     "django.contrib.admin",  # Includes standard authentication templates.
     "django.contrib.auth",  # Used by other `contrib` packages.
-    "django.contrib.contenttypes",
+    "django.contrib.contenttypes",  # Used by other `contrib` packages, such as `auth` and `admin`.
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",

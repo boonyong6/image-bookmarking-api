@@ -1,3 +1,4 @@
+from actions.utils import create_action
 from decouple import config
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login
@@ -68,6 +69,7 @@ def register(request: HttpRequest):
             new_user.save()
             # Create the user profile.
             Profile.objects.create(user=new_user)
+            create_action(new_user, "has created an account.")
             return render(request, "account/register_done.html", {"new_user": new_user})
     else:
         user_form = UserRegistrationForm()
@@ -127,6 +129,7 @@ def user_follow(request: HttpRequest):
 
         if action == "follow":
             Contact.objects.get_or_create(user_from=request.user, user_to=user)
+            create_action(request.user, "is following", user)
         else:
             Contact.objects.filter(user_from=request.user, user_to=user).delete()
 
