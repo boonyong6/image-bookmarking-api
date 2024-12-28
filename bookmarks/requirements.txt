@@ -8,3 +8,4 @@ python-decouple==3.8
 requests==2.32.3
 easy-thumbnails==2.10
 django-browser-reload==1.17.0
+django-debug-toolbar==4.4.6

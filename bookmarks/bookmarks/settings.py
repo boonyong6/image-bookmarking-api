@@ -47,11 +47,13 @@ INSTALLED_APPS = [
     "django_extensions",
     "easy_thumbnails",
     "django_browser_reload",
+    "debug_toolbar",
     "images.apps.ImagesConfig",
     "actions.apps.ActionsConfig",
 ]
 
 MIDDLEWARE = [
+    "debug_toolbar.middleware.DebugToolbarMiddleware",  # Must be placed before any other middleware, except for middleware that encodes the response's content, such as `GZipMiddleware`.
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",  # Handles the session across requests.
     "django.middleware.common.CommonMiddleware",
@@ -59,7 +61,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",  # Associate users with requests (`request.user`) using sessions.
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "django_browser_reload.middleware.BrowserReloadMiddleware",  # Should be listed after any others that encode the response, such as Django's `GZipMiddleware`.
+    "django_browser_reload.middleware.BrowserReloadMiddleware",  # Must be placed after any others that encode the response's content, such as Django's `GZipMiddleware`.
 ]
 
 ROOT_URLCONF = "bookmarks.urls"
@@ -182,3 +184,9 @@ ABSOLUTE_URL_OVERRIDES = {
     # "app_label.model_name" - Model name must be all lowercase.
     "auth.user": lambda user: reverse_lazy("user_detail", args=[user.username]),
 }
+
+# django-debug-toolbar
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
