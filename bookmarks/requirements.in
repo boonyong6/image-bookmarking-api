@@ -1,0 +1,12 @@
+Django
+pillow
+social-auth-app-django
+django-extensions
+Werkzeug
+pyOpenSSL
+python-decouple
+requests
+easy-thumbnails
+django-browser-reload
+django-debug-toolbar
+redis
