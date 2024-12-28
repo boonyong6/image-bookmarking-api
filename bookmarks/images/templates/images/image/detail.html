@@ -19,6 +19,7 @@
           <span class="total">{{ total_likes }}</span>
           like{{ total_likes|pluralize }}
         </span>
+        <span class="count">{{ total_views }} view{{ total_views|pluralize }}</span>
         {% comment %} Use data-* attributes to store request params. {% endcomment %}
         <a href="#"
            data-id="{{ image.id }}"
