@@ -16,4 +16,3 @@ def user_created(sender, instance: AbstractUser, **kwargs):
 
     Profile.objects.get_or_create(user=instance)
     create_action(instance, "has created an account.")
-    return
