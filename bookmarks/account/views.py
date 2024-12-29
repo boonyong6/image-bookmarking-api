@@ -83,9 +83,10 @@ def register(request: HttpRequest):
             new_user.set_password(user_form.cleaned_data["password"])
             # Save the User object.
             new_user.save()
-            # Create the user profile.
-            Profile.objects.create(user=new_user)
-            create_action(new_user, "has created an account.")
+            # ! Create profile and action will be handled by `post_save` signals.
+            # # Create the user profile.
+            # Profile.objects.create(user=new_user)
+            # create_action(new_user, "has created an account.")
             return render(request, "account/register_done.html", {"new_user": new_user})
     else:
         user_form = UserRegistrationForm()
