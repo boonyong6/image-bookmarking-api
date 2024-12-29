@@ -48,6 +48,8 @@ def image_detail(request, id, slug):
     image = get_object_or_404(Image, id=id, slug=slug)
     # Increment total image views by 1.
     total_views = r.incr(f"image:{image.id}:views")
+    # Increment image ranking by 1.
+    r.zincrby("image_ranking", 1, image.id)
     return render(
         request,
         "images/image/detail.html",
@@ -104,4 +106,34 @@ def image_list(request: HttpRequest):
         request,
         "images/image/list.html",
         {"section": "images", "images": images},
+    )
+
+
+@login_required
+def image_ranking(request):
+    # * Get image ranking dictionary.
+    # `start=0` specifies the lowest score. `end=-1` specifies the highest score.
+    #   Range of 0 to -1 returns all elements.
+    image_ranking_list: list[tuple[bytes, int]] = r.zrange(
+        "image_ranking",
+        start=0,
+        end=-1,
+        desc=True,
+        withscores=True,
+        score_cast_func=int,
+    )[:10]
+    image_ranking = {int(key): value for key, value in image_ranking_list}
+    image_ranking_ids = list(image_ranking)
+    # * Get most viewed images.
+    # Force query to be executed using `list()`.
+    most_viewed = list(Image.objects.filter(id__in=image_ranking_ids))
+    # Sort by index of appearance in the image ranking.
+    most_viewed.sort(key=lambda image: image_ranking_ids.index(image.id))
+    for image in most_viewed:
+        image.views = image_ranking.get(image.id)
+
+    return render(
+        request,
+        "images/image/ranking.html",
+        {"section": "images", "most_viewed": most_viewed},
     )

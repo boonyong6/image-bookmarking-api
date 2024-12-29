@@ -38,7 +38,10 @@
     "urlpatterns",
     "validlink",
     "Werkzeug",
+    "withscores",
     "wsgi",
-    "Xutf"
+    "Xutf",
+    "zincrby",
+    "zrange"
   ]
 }
