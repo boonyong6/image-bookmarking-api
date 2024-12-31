@@ -9,8 +9,13 @@
      - Post sharing
      - Search
      - Post recommendations
-  2. **Image bookmarking** (chapters 4 to 7)
+  2. **Image bookmarking** · Social Website (chapters 4 to 7)
      - Authentication system
+     - Bookmark images
+     - Social features: Like images
+     - Follow system
+     - Activity/Action/Event stream
+     - Image stats tracking (e.g. views, ranking)
   3. **Online shop** (chapters 8 to 11)
   4. **e-learning platform** (chapters 12 to 17)
 
@@ -2344,3 +2349,399 @@ class ImageCreateForm(forms.ModelForm):
 - Use `images_only` HTTP GET parameter to distinguish AJAX requests.
 - Raise `EmptyPage` exception if the requested page is **out of range**.
 - Script that implements infinite scrolling - [image-list.ts](bookmarks/vite/src/image-list.ts)
+
+# 7 Tracking User Actions
+
+- Features to build:
+  - Follow system
+    - Define many-to-many relationships with an **intermediate model**.
+  - Activity/Action/Event stream - `Action` model
+    - Associate related objects via **generic relations**.
+    - **Optimize QuerySets** for related objects using `select_related()` and `prefetch_related()`.
+  - Denormalize counts using **Django signals**.
+  - Track **image views and ranking** with **Redis**.
+
+## Functional overview
+
+![7-1-diagram-of-functionalities-built-in-chapter-7](images/7-1-diagram-of-functionalities-built-in-chapter-7.png)
+
+## Building a follow system
+
+- To follow each other and **track what other users share**.
+
+### Creating many-to-many relationships with an intermediate model - `Contact` model
+
+- Adding `ManyToManyField` to one of the related models is **suitable for most cases**.
+- **But sometimes** you need to create an intermediate model.
+  - To build m2m relationship for built-in model (e.g. `User`) **without altering it**.
+  - To store **additional information** such as created date.
+- Intermediate model for user relationships - [`Contact` model](bookmarks/account/models.py#L24)
+  - Can manage the relationship directly using the intermediate model **OR...**
+  - Add a `ManyToManyField` (e.g. `following`) in one of the related models and pass the intermediate model (e.g. `Contact`) as an argument to the `through` parameter.
+    - **Simplify** the way to retrieve related objects with `user.followers.all()` and `users.following.all()`.
+- To access the end side of the relationship from the **custom** `User` model:
+
+  ```py
+  class MyUser(AbstractUser):
+      ...
+
+      following = models.ManyToManyField(
+          "self",  # To create a relationship to the same model.
+          through=Contact,  # To use a custom intermediate model.
+          related_name="followers",
+          symmetrical=False
+      )
+  ```
+
+- To add the `following` field (`ManyToManyField`) dynamically to the **built-in** `User` model:
+
+  - Using `add_to_class()` is **not the recommended way** of adding fields to models. However, in this case we use it to avoid creating a custom user model.
+  - When creating a **relationship with itself**, Django forces the relationship to be **symmetrical**.
+    - Set `symmetrical=False` to define a **non-symmetrical** relationship (if I follow you, it doesn't mean that you automatically follow me).
+  - See more details [here](bookmarks/account/models.py#L47).
+
+  ```py
+  # models.py
+  # Add the following field to User dynamically.
+  User = get_user_model()
+  User.add_to_class(  # Monkey patch
+      "following",
+      models.ManyToManyField(
+          "self",
+          through=Contact,
+          related_name="followers",
+          symmetrical=False  # <--
+      )
+  )
+  ```
+
+- **In most cases**, it is **preferable** to add fields to the `Profile` model.
+- **Good practice:** When you start a **new project**, it is **highly recommended** that you create a **custom user model**, so you gain the option of customizing the model.
+- When you use an intermediate model, **some of the related manager's methods are disabled**, such as `add()`, `create()`, or `remove()`.
+  - Have to use the intermediate model (e.g. `Contact`) to create or delete user relationships.
+
+### Creating list and detail views for user profiles
+
+- **Another way** to specify the **canonical URL** is by `ABSOLUTE_URL_OVERRIDES` setting.
+
+  ```py
+  # settings.py
+  ABSOLUTE_URL_OVERRIDES = {
+      # "app_label.model_name" - Model name must be all lowercase.
+      "auth.user": lambda user: reverse_lazy("user_detail", args=[user.username]),
+  }
+  ```
+
+- Using the **username** instead of the user ID **in the URL pattern** enhances both **usability** and **security**.
+
+## Creating an activity stream application
+
+- User can see the recent interactions of the users they follow.
+- Activity stream is a list of **recent activities**, such as News Feed.
+- Example activities/actions:
+  - user X bookmarked image Y.
+  - user X is now following user Y.
+- Define **generic relations** to associate actions with any existing model.
+
+### Using the contenttypes framework - `django.contrib.contenttypes`
+
+- Track all models and provides a **generic interface** to interact with your models.
+- It's part of the default settings of Django projects.
+- Contains a `ContentType` model. Instances of it represent the actual models.
+- Usage examples:
+
+  ```py
+  image_type = ContentType.objects.get(app_label="images", model="image")
+  image_type  # Returns <ContentType: images | image>
+
+  # To retrieve the model class.
+  image_type.model_class()  # Returns <class "images.models.Image">
+
+  ContentType.objects.get_for_model(Image)   # Returns <ContentType: images | image>
+  ```
+
+- Additional resource: [contenttypes framework](https://docs.djangoproject.com/en/5.1/ref/contrib/contenttypes/)
+
+### Adding generic relations to your models - `GenericForeignKey`
+
+- `ContentType` model is the **key** to defining generic relations.
+- **Three fields** needed to set up a generic relation:
+
+  1. `ForeignKey` field to `ContentType`.
+     - **Can restrict the content types** to choose from a limited set of models using the `limit_choices_to` attribute.
+  2. Field (e.g. `PositiveIntegerField`) - To store the **primary key of the related object**.
+  3. `GenericForeignKey` field
+     - To define and manage the generic relation **using the two previous fields**.
+     - This field is **not created** in the **database**.
+
+  ```py
+  # models.py
+  class Action(models.Model):
+      ...
+
+      target_ct = models.ForeignKey(
+          ContentType,
+          blank=True,
+          null=True,
+          related_name="target_obj",
+          on_delete=models.CASCADE,
+      )
+      target_id = models.PositiveIntegerField(null=True, blank=True)
+      target = GenericForeignKey("target_ct", "target_id")
+
+      class Meta:
+          indexes = [
+              ...
+              models.Index(fields=["target_ct", "target_id"])
+          ]
+  ```
+
+- **Generic relations:**
+  - Can make your applications more **flexible**.
+  - Allows you to associate models in a **non-exclusive** manner, enabling a single model to relate to multiple other models.
+
+### Adding user actions to the activity stream - `create_action()`
+
+- [`create_action()`](bookmarks/actions/utils.py) - Helper method to facilitate action creation.
+- Actions added by views:
+  - A user bookmarks an image.
+  - A user likes an image.
+  - A user creates an account.
+  - A user starts following another user.
+
+### Optimizing QuerySets that involve related objects - `select_related()`, `prefetch_related()`
+
+- When retrieving an object (e.g. `Action`), you may often want to access its related objects (e.g. `User`, `Profile`).
+- ORM offers ways to **retrieve related objects at the same time**.
+
+#### Using `select_related()` (Eager loading)
+
+- Allows you to retrieve related objects for **one-to-many relationships**.
+- It's for `ForeignKey` and `OneToOne` fields.
+
+  ```py
+  # "user" is the `ForeignKey` field of `Action` model.
+  # "user_profile" is the `OneToOneField` of `User` model.
+  Action.objects.select_related("user", "user__profile")
+  ```
+
+- Works by performing a **SQL JOIN**.
+- Call `select_related()` **without any arguments** will retrieve objects from **ALL** `ForeignKey`.
+  - Always limit `select_related()`.
+- Using `select_related()` properly can vastly **improve execution time**.
+- **BUT**, it **doesn't work** for `ManyToMany` and **reverse** `ForeignKey` fields. See `prefetch_related()` below.
+
+#### Using `prefetch_related()`
+
+- Performs a **separate lookup/SQL** for each relationship and **joins the results using Python**.
+- **Supports** the prefetching of `ManyToMany`, **reverse** `ForeignKey`, `GenericRelation` and `GenericForeignKey`.
+
+  ```py
+  # "target" is the `GenericForeignKey` field of `Action` model.
+  Action.objects.select_related(
+      "user", "user__profile"
+  ).prefetch_related("target")  # <--
+  ```
+
+## Using signals for denormalizing counts (image views)
+
+- Denormalize data makes it redundant to **optimize read** performance.
+  - **Difficult** to keep denormalized **data updated** and in sync.
+  - Use it **only** when you really need it.
+  - Consider **alternatives**:
+    - Database indexes
+    - Query optimization
+    - Caching
+- We'll use **Django signals** to keep the data updated.
+
+### Working with signals
+
+- Django has a **signal dispatcher** that allows **receiver functions** to **get notified** when certain actions occur.
+- Signals allow you to **decouple logic**.
+- **Built-in signals** for models (`django.db.models.signals`):
+  - `pre_save`, `post_save`
+  - `pre_delete`, `post_delete`
+  - `m2m_changed` - When a `ManyToManyField` on a model is changed.
+- If like counts is **NOT denormalize**, we have to use **aggregation function** when retrieving images by popularity:
+
+  - Ordering images by counting their total likes is **more expensive** than ordering them by a field that stores total counts.
+
+  ```py
+  images_by_popularity = Image.objects.annotate(
+      total_likes=Count("users_like")
+  ).order_by("-total_likes")
+  ```
+
+- Add a field **to denormalize like counts** (`total_likes`):
+
+  - Denormalizing **counts** is useful when you want to **filter** or **order** QuerySets by them.
+
+  ```py
+  # models.py
+  class Image(modes.Model):
+      ...
+      total_likes = models.PositiveIntegerField(default=0)
+
+      class Meta:
+          indexes = [
+              ...
+              models.Index(fields=["-total_likes"]),
+          ]
+  ```
+
+- To **attach** a receiver function to a signal (`m2m_changed`) using the `@receiver()`:
+
+  - Alternative - Use `connect()` of the `Signal` object.
+
+  ```py
+  # signals.py
+  # `.through` refers to the intermediary table,
+  #   `images.models.Image_users_like`.
+  @receiver(m2m_changed, sender=Image.users_like.through)
+  def users_like_changed(sender, instance: Image, **kwargs):
+      instance.total_likes = instance.users_like.count()
+      instance.save()
+  ```
+
+- Django signals are **synchronous** and **blocking**.
+  - Can use it to launch **asynchronous tasks** with **Celery**.
+
+### Application configuration classes - `apps.py`
+
+- Stores **metadata** and the **configuration** for the app.
+- Provides **introspection** for the app.
+- Additional resource: [Application configuration](https://docs.djangoproject.com/en/5.1/ref/applications/)
+- To **register** receiver functions to signals, you have to **import** them (e.g. `signals.py`) into the `ready()` of your **application configuration class** (`apps.py`).
+
+  ```py
+  # apps.py
+  class ImagesConfig(AppConfig):
+      ...
+
+      def ready(self):  # Runs when the application is loaded.
+          # Import signal handlers
+          import images.signals  # <--
+  ```
+
+- **Caveat:** Signals make it **difficult** to know the **control flow**. In many cases, you **can avoid** using signals.
+
+## Using Django Debug Toolbar - `django-debug-toolbar`
+
+- Includes more detailed debug information about the current request/response cycle.
+- Information is divided into multiple panels, including:
+  - Request/response data, python package versions used, execution time, settings, headers, SQL queries, templates used, cache, signals, and logging.
+- Additional resource: [Django Debug Toolbar](https://django-debug-toolbar.readthedocs.io/en/stable/)
+
+### Installing Django Debug Toolbar
+
+- Mostly implemented as middleware.
+- **Must** be placed before any other middleware, **except** for middleware that encodes the response's content, such as `GZipMiddleware`.
+- Configuration:
+
+  ```py
+  # settings.py
+  # Debug toolbar will only display if your IP address matches.
+  INTERNAL_IPS = [
+      "127.0.0.1",
+  ]
+
+  # main urls.py
+  urlpatterns = [
+      ...
+      path("__debug__/", include("debug_toolbar.urls")),
+  ]
+  ```
+
+### Django Debug Toolbar panels
+
+| Panel         | Description                                                                                                                                  |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Time**      | In **Windows**, only the total time is available.                                                                                            |
+| **SQL**       | Can help you **identify unnecessary queries**, **duplicated queries** that can be reused, or **long-running queries** that can be optimized. |
+| **Templates** | Shows the different templates used.                                                                                                          |
+| **Signals**   | Can see **all the signals** that are registered **in your project** and the **receiver functions** attached to each signal.                  |
+
+- Additional resource: [Third-party panels](https://django-debug-toolbar.readthedocs.io/en/stable/panels.html#third-party-panels)
+
+### Django Debug Toolbar commands - `debugsqlshell`
+
+- Provides a **management command** to debug SQL for ORM calls.
+- `debugsqlshell` replicates the Django `shell` but it **outputs SQL**.
+- Can use this command **to test ORM queries** (check the resulting SQL and execution time).
+
+## Counting image views with Redis
+
+- Redis stores data **in memory**.
+- Data in Redis can be **persisted to disk** every once in a while or by adding each command to a **log**.
+- Redis supports **diverse data structures**, such as strings, hashes, lists, sets, ordered sets, `bitmap` or `HyperLogLog` methods.
+- **Redis use cases:**
+  - Rapidly changing data
+  - Volatile storage
+  - Cache
+
+### Installing Redis
+
+- Basic Redis commands for **key operations**:
+
+  | Command    | Description                                     | Example                    |
+  | ---------- | ----------------------------------------------- | -------------------------- |
+  | `SET`      | To store a value in a key.                      | `SET name "Peter"`         |
+  | `GET`      | Retrieve the value.                             | `GET name`                 |
+  | `EXISTS`   | Check whether a key exists.                     | `EXISTS name`              |
+  | `EXPIRE`   | Set the time-to-live (TTL) in seconds.          | `EXPIRE name 2`            |
+  | `EXPIREAT` | Set the time-to-live (TTL) with Unix timestamp. | `EXPIREAT name 1735632649` |
+  | `TTL`      | Check the TTL of a key.                         | `TTL name`                 |
+  | `DEL`      | Delete key.                                     | `DEL name`                 |
+
+- Additional resource: [Redis commands](https://redis.io/docs/manual/data-types/)
+
+### Storing image views in Redis - `image:<id>:views`
+
+- Using Redis, you can **replace** the SQL `UPDATE` query that updates the **image view counts** (rapidly changing data) to simply increment a **counter** stored **in memory**.
+- Usage example:
+
+  ```py
+  # Initialize redis client.
+  r = redis.Redis(host="localhost", port=6379, db=0)
+
+  # Redis key's naming convention - `object-type:id:field`.
+  total_views = r.incr(f"image:{image.id}:views")
+  ```
+
+### Storing a ranking of the most viewed images in Redis
+
+- Use **sorted sets** to store ranking.
+  - It is a **non-repeating collection of strings** associated with a **score**.
+- Usage example:
+
+  ```py
+  # To store image views in a sorted set.
+  r.zincrby("image_ranking", 1, image.id)
+
+  # To get image views in the sorted set.
+  #   `start=0` specifies the lowest score.
+  #   `end=-1` specifies the highest score.
+  #   Range of 0 to -1 returns all elements.
+  image_ranking: list[tuple[bytes, int]] = r.zrange(
+      "image_ranking",
+      start=0,
+      end=-1,
+      desc=True,
+      withscores=True,
+      score_cast_func=int,
+  )[:10]
+  ```
+
+### Next steps with Redis
+
+- Redis use cases:
+
+  | Use case                     | Description                                                                    | Relevant methods                                    |
+  | ---------------------------- | ------------------------------------------------------------------------------ | --------------------------------------------------- |
+  | **Counting**                 | Mange **counters**.                                                            | `incr()`, `incrby()`                                |
+  | **Storing the latest items** | For quick access.                                                              | `lpush()`, `rpush()`, `lpop()`, `rpop()`, `ltrim()` |
+  | **Queues**                   | Provides the **blocking** of queue commands.                                   |
+  | **Caching**                  | Use Redis as a **cache**.                                                      | `expire()`, `expireat()`                            |
+  | **Pub/Sub**                  | Provides commands for subscribing/unsubscribing and send messages to channels. |
+  | **Ranking and leaderboards** | Using **sorted sets** with scores.                                             | `zincrby()`, `zrange()`                             |
+  | **Real-time tracking**       | Redis's **fast I/O** makes it suitable for real-time scenarios.                |
