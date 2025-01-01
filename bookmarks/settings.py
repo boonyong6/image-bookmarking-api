@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "easy_thumbnails",
     "django_browser_reload",
     "debug_toolbar",
+    "rest_framework",
     "images.apps.ImagesConfig",
     "actions.apps.ActionsConfig",
 ]

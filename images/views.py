@@ -1,5 +1,4 @@
 import redis
-from actions.utils import create_action
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
@@ -8,6 +7,7 @@ from django.http.request import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
+from actions.utils import create_action
 from bookmarks.typing import settings
 
 from .forms import ImageCreateForm

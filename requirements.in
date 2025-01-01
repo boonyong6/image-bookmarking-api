@@ -10,3 +10,6 @@ easy-thumbnails
 django-browser-reload
 django-debug-toolbar
 redis
+djangorestframework
+markdown
+django-filter
