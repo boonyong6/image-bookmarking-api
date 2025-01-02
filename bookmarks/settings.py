@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "django_browser_reload",
     "debug_toolbar",
     "rest_framework",
+    "oauth2_provider",
     "images.apps.ImagesConfig",
     "actions.apps.ActionsConfig",
 ]
@@ -120,6 +121,8 @@ AUTH_PASSWORD_VALIDATORS = [
 LOGIN_REDIRECT_URL = "dashboard"  # Default redirect URL after successful login.
 LOGIN_URL = "login"
 LOGOUT_URL = "logout"
+
+AUTH_USER_MODEL = "account.User"
 
 # Social authentication
 

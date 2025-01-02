@@ -26,6 +26,8 @@ urlpatterns = (
         path("account/", include("account.urls")),
         path("social-auth/", include("social_django.urls", namespace="social")),
         path("images/", include("images.urls", namespace="images")),
+        # TODO: Change "o/" to "auth/"?
+        path("o/", include("oauth2_provider.urls")),
         path("__reload__/", include("django_browser_reload.urls")),
         path("__debug__/", include("debug_toolbar.urls")),
     ]

@@ -44,17 +44,23 @@ class Contact(models.Model):
         return f"{self.user_from} follows {self.user_to}"
 
 
-# Add `following` field to built-in `User` model dynamically (monkey patch).
-User = get_user_model()
-# ! In general, using `add_to_class()` is not the recommended way of adding fields to models.
-# However, in this case we use it to avoid creating a custom user model.
-# Django migration system will detect this as a schema change. To skip it,
-#   create the migration as usual, then use the `--fake` option
-#   when running `migrate`.
-User.add_to_class(
-    "following",
-    # `symmetrical=False` - if I follow you, it doesn't mean that you automatically follow me.
-    models.ManyToManyField(
+# # Add `following` field to built-in `User` model dynamically (monkey patch).
+# User = get_user_model()
+# # ! In general, using `add_to_class()` is not the recommended way of adding fields to models.
+# # However, in this case we use it to avoid creating a custom user model.
+# # Django migration system will detect this as a schema change. To skip it,
+# #   create the migration as usual, then use the `--fake` option
+# #   when running `migrate`.
+# User.add_to_class(
+#     "following",
+#     # `symmetrical=False` - if I follow you, it doesn't mean that you automatically follow me.
+#     models.ManyToManyField(
+#         "self", through=Contact, related_name="followers", symmetrical=False
+#     ),
+# )
+
+
+class User(AbstractUser):
+    following = models.ManyToManyField(
         "self", through=Contact, related_name="followers", symmetrical=False
-    ),
-)
+    )

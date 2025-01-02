@@ -1,0 +1,13 @@
+Title: Authorization Code flow - Resource access
+
+participant Resource Owner
+participant Client
+participant Resource Server
+
+Note right of Client: A web/mobile app
+
+Resource Owner->Client: View resource
+Client->Resource Server: Retrieve resource
+Note right of Client: GET /resource/\nRequest header:\n- Authorization: Bearer <access_token>
+Resource Server-->Client: Resource
+Client-->Resource Owner: Resource page

@@ -1,0 +1,23 @@
+Title: Authorization Code flow - Client app authorization
+
+participant Resource Owner
+participant Client
+participant Authorization Server
+
+Note right of Client: A web/mobile app
+
+Resource Owner->Client: Authorize client
+Client->Authorization Server: Authorize client
+Note right of Client: Generate code verifier and code challenge
+Note right of Client: GET /o/authorize/\nQuery string:\n- response_type: code\n- code_challenge: <generated>\n- code_challenge_method: S256\n- client_id: <client_id>\n- redirect_uri: <callback_url>
+Authorization Server-->Resource Owner: Login page
+Resource Owner->Authorization Server: Login
+Authorization Server-->Resource Owner: Consent page
+Resource Owner->Authorization Server: Authorize client confirm
+Authorization Server-->Client: Redirect with authorization code
+Note left of Authorization Server: Location: <callback_url>?code=<code>
+Client->Authorization Server: Exchange token
+Note right of Client: POST /o/token/\nData:\n- client_id: <client_id>\n- client_secret: <client_secret>(For confidential client only)\n- code: <code>\n- code_verifier: <generated>\n- redirect_uri: <callback>\n- grant_type: authorization_code\n
+Authorization Server-->Client: Access & refresh tokens
+Note right of Client: Store access & refresh tokens
+Client-->Resource Owner: Client authorized
