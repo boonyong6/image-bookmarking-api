@@ -50,4 +50,5 @@ urlpatterns = [
     # Place `user_follow` before `user_detail`, otherwise this pattern will never reached.
     path("users/follow/", views.user_follow, name="user_follow"),
     path("users/<username>/", views.user_detail, name="user_detail"),
+    path("api/hello/", views.ApiEndpoint.as_view()),  # Resource endpoint example.
 ]

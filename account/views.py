@@ -1,7 +1,5 @@
 from typing import cast
 
-from actions.models import Action
-from actions.utils import create_action
 from decouple import config
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login
@@ -13,6 +11,10 @@ from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 from django.utils.html import escape
 from django.views.decorators.http import require_POST
+from oauth2_provider.views.generic import ProtectedResourceView
+
+from actions.models import Action
+from actions.utils import create_action
 
 from .forms import LoginForm, ProfileEditForm, UserEditForm, UserRegistrationForm
 from .models import Contact, Profile
@@ -153,3 +155,8 @@ def user_follow(request: HttpRequest):
         return JsonResponse({"status": "ok"})
     except User.DoesNotExist:
         return JsonResponse({"status": "error"})
+
+
+class ApiEndpoint(ProtectedResourceView):
+    def get(self, request: HttpRequest, *args, **kwargs):
+        return HttpResponse("Hello, OAuth2!")
