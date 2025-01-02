@@ -5,6 +5,7 @@
     "capfirst",
     "changefreq",
     "contenttypes",
+    "corsheaders",
     "createsuperuser",
     "debugsqlshell",
     "dumpdata",

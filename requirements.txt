@@ -8,6 +8,7 @@ asgiref==3.8.1
     # via
     #   django
     #   django-browser-reload
+    #   django-cors-headers
 certifi==2024.12.14
     # via requests
 cffi==1.17.1
@@ -27,6 +28,7 @@ django==5.1.4
     # via
     #   -r requirements.in
     #   django-browser-reload
+    #   django-cors-headers
     #   django-debug-toolbar
     #   django-extensions
     #   django-filter
@@ -35,6 +37,8 @@ django==5.1.4
     #   easy-thumbnails
     #   social-auth-app-django
 django-browser-reload==1.17.0
+    # via -r requirements.in
+django-cors-headers==4.6.0
     # via -r requirements.in
 django-debug-toolbar==4.4.6
     # via -r requirements.in

@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "debug_toolbar",
     "rest_framework",
     "oauth2_provider",
+    "corsheaders",
     "images.apps.ImagesConfig",
     "actions.apps.ActionsConfig",
 ]
@@ -58,12 +59,14 @@ MIDDLEWARE = [
     "debug_toolbar.middleware.DebugToolbarMiddleware",  # Must be placed before any other middleware, except for middleware that encodes the response's content, such as `GZipMiddleware`.
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",  # Handles the session across requests.
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",  # Associate users with requests (`request.user`) using sessions.
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_browser_reload.middleware.BrowserReloadMiddleware",  # Must be placed after any others that encode the response's content, such as Django's `GZipMiddleware`.
+    # "account.middleware.LogRequestMiddleware",
 ]
 
 ROOT_URLCONF = "bookmarks.urls"
@@ -200,3 +203,11 @@ INTERNAL_IPS = [
 REDIS_HOST = "localhost"
 REDIS_PORT = 6379
 REDIS_DB = 0
+
+# django-cors-headers
+
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://boonyong6.github.io$",
+    r"^https://oauth.pstmn.io$",
+    r"^https?://localhost:\d{4,5}$",
+]
