@@ -51,4 +51,5 @@ urlpatterns = [
     path("users/follow/", views.user_follow, name="user_follow"),
     path("users/<username>/", views.user_detail, name="user_detail"),
     path("api/hello/", views.ApiEndpoint.as_view()),  # Resource endpoint example.
+    path("secret/", views.secret_page, name="secret"),
 ]

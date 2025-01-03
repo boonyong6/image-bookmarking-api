@@ -159,4 +159,11 @@ def user_follow(request: HttpRequest):
 
 class ApiEndpoint(ProtectedResourceView):
     def get(self, request: HttpRequest, *args, **kwargs):
+        print(f"{request.user=}")
+        print(f"{request.access_token=}")
         return HttpResponse("Hello, OAuth2!")
+
+
+@login_required
+def secret_page(request, *args, **kwargs):
+    return HttpResponse("Secret contents!", status=200)

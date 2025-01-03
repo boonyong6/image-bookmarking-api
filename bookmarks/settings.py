@@ -62,7 +62,11 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
+    # `AuthenticationMiddleware` must be placed before `OAuth2TokenMiddleware`.
+    # `AuthenticationMiddleware` is not required for using `django-oauth-toolkit`.
     "django.contrib.auth.middleware.AuthenticationMiddleware",  # Associate users with requests (`request.user`) using sessions.
+    "oauth2_provider.middleware.OAuth2TokenMiddleware",  # Associate users with requests (`request.user`) using tokens.
+    "oauth2_provider.middleware.OAuth2ExtraTokenMiddleware",  # Adds `Token` object (`request.access_token`) to the request.
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_browser_reload.middleware.BrowserReloadMiddleware",  # Must be placed after any others that encode the response's content, such as Django's `GZipMiddleware`.
@@ -148,6 +152,7 @@ SOCIAL_AUTH_PIPELINE = [
 # User credentials will be checked using `ModelBackend`, if no user is returned,
 #   credentials will be checked using `EmailAuthBackend`.
 AUTHENTICATION_BACKENDS = [
+    "oauth2_provider.backends.OAuth2Backend",
     "django.contrib.auth.backends.ModelBackend",
     "account.authentication.EmailAuthBackend",
     "social_core.backends.google.GoogleOAuth2",

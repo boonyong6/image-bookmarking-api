@@ -32,3 +32,40 @@
 
 - Implements an easy way to protect the **views**.
 - Provides a set of **generic class-based view** to add OAuth behavior.
+
+## Part 3 - OAuth2 token authentication
+
+### Scenario
+
+- To use an **Access Token** to authenticate users against Django's authentication system.
+
+### Setup a provider
+
+- `oauth2_provider.middleware.OAuth2TokenMiddleware`
+  - Checks for tokens inside requests.
+  - `AuthenticationMiddleware` **MUST** be placed **before** `OAuth2TokenMiddleware`.
+  - `AuthenticationMiddleware` is **NOT required** for using `django-oauth-toolkit`.
+  - Optional `OAuth2ExtraTokenMiddleware` adds the `Token` (`request.access_token`) to the request, facilitating access to `Application` object.
+- `oauth2_provider.backends.OAuth2Backend` - Custom authentication backend which takes care of token verification.
+
+### Protect your view
+
+- `OAuth2Backend` is compatible with `login_required` decorator.
+
+### Working with Django RESTframework generic class based views
+
+- Ways to support token handling:
+
+  - Override the default `permission_classes` class attribute:
+
+    ```py
+    from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope
+
+    class SnippetList(generics.ListCreateAPIView):
+        ...
+        permission_classes = [TokenHasReadWriteScope]  # <--
+    ```
+
+  - Override `get_permission_classes()`.
+
+- Additional resource: [DRF permissions](https://www.django-rest-framework.org/api-guide/permissions/)
