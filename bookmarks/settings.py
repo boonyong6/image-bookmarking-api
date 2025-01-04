@@ -70,7 +70,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_browser_reload.middleware.BrowserReloadMiddleware",  # Must be placed after any others that encode the response's content, such as Django's `GZipMiddleware`.
-    # "account.middleware.LogRequestMiddleware",
+    # "bookmarks.middleware.LogRequestMiddleware",
 ]
 
 ROOT_URLCONF = "bookmarks.urls"
