@@ -69,3 +69,18 @@
   - Override `get_permission_classes()`.
 
 - Additional resource: [DRF permissions](https://www.django-rest-framework.org/api-guide/permissions/)
+
+## Part 4 - Revoking an OAuth2 Token
+
+### Scenario
+
+- E.g. Logout
+
+### Revoking a Token - `POST /o/revoke_token/`
+
+- Revocation-specific request data:
+  - `token` (REQUIRED) - The access token you want to revoke.
+  - `token_type_hint` (OPTIONAL) - "access_token" | "refresh_token"
+- General request data:
+  - `client_id`
+  - `client_secret` (For **confidential** client only)

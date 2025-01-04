@@ -1,0 +1,11 @@
+Title: OAuth 2 flow - Token Revocation
+
+participant Resource Owner
+participant Client
+participant Authorization Server
+
+Resource Owner->Client: Logout
+Client->Authorization Server: Revoke token
+Note right of Client: POST /o/revoke_token\nData:\ntoken: <access_token>\nclient_id: <client_id>\n*For confidential client\nclient_secret: <client_secret>
+Authorization Server-->Client: Token revoked (200 OK)
+Client-->Resource Owner: Logged out

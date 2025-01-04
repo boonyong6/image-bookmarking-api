@@ -2,17 +2,17 @@
 
 ## `account` app
 
-| API              | Endpoint                                                                                           |
-| ---------------- | -------------------------------------------------------------------------------------------------- |
-| Login            | `POST /api/auth/authorize/`<br />`POST /api/auth/token/`                                           |
-| Logout           | `POST /api/auth/logout/`<br />Simply remove the token from browser storage?<br />Revoke the token? |
-| Change password  | `PUT /api/auth/password/`                                                                          |
-| Reset password   | `POST /api/auth/password-reset-request/` -><br />`POST /api/auth/password-reset/`                  |
-| List users       | `GET /api/users/`                                                                                  |
-| Register user    | `POST /api/users/`                                                                                 |
-| View user detail | `GET /api/users/<username>/`                                                                       |
-| Edit profile     | `PATCH /api/users/<username>/`                                                                     |
-| Follow user      | `POST /api/contacts/`                                                                              |
+| API              | Endpoint                                                                          |
+| ---------------- | --------------------------------------------------------------------------------- |
+| Login            | `POST /api/auth/authorize/`<br />`POST /api/auth/token/`                          |
+| Logout           | `POST /api/auth/revoke_token/`                                                    |
+| Change password  | `PUT /api/auth/password/`                                                         |
+| Reset password   | `POST /api/auth/password-reset-request/` -><br />`POST /api/auth/password-reset/` |
+| List users       | `GET /api/users/`                                                                 |
+| Register user    | `POST /api/users/`                                                                |
+| View user detail | `GET /api/users/<username>/`                                                      |
+| Edit profile     | `PATCH /api/users/<username>/`                                                    |
+| Follow user      | `POST /api/contacts/`                                                             |
 
 ## `images` app
 
