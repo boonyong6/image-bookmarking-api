@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently --names \"django,vite\" --prefix-colors \"green.bold,yellow.bold\" --kill-others \"python manage.py runserver_plus --cert-file cert.crt\" \"(cd vite && npm run build -- --watch)\"",
+    "dev": "source ./init-env.sh && concurrently --names \"django,vite\" --prefix-colors \"green.bold,yellow.bold\" --kill-others \"python manage.py runserver_plus --cert-file cert.crt\" \"(cd vite && npm run build -- --watch)\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Boon Yong",

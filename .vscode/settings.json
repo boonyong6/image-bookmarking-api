@@ -46,6 +46,7 @@
     "truncatewords",
     "uidb",
     "urlpatterns",
+    "userinfo",
     "validlink",
     "Werkzeug",
     "withscores",

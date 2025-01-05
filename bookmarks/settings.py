@@ -212,7 +212,21 @@ REDIS_DB = 0
 # django-cors-headers
 
 CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^https://boonyong6.github.io$",
     r"^https://oauth.pstmn.io$",
     r"^https?://localhost:\d{4,5}$",
 ]
+
+# django-oauth-toolkit
+
+OAUTH2_PROVIDER = {
+    "OIDC_ENABLED": True,
+    "OIDC_RSA_PRIVATE_KEY": config("OIDC_RSA_PRIVATE_KEY"),
+    "SCOPES": {
+        "read": "Read scope",
+        "write": "Write scope",
+        "openid": "OpenID Connect scope",
+        "profile": "Basic information, such as name",
+        "email": "Email and email verified information",
+    },
+    "OAUTH2_VALIDATOR_CLASS": "account.oauth_validators.CustomOAuth2Validator",
+}

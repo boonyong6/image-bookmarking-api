@@ -160,7 +160,8 @@ def user_follow(request: HttpRequest):
 class ApiEndpoint(ProtectedResourceView):
     def get(self, request: HttpRequest, *args, **kwargs):
         print(f"{request.user=}")
-        print(f"{request.access_token=}")
+        if hasattr(request, "access_token"):
+            print(f"{request.access_token=}")
         return HttpResponse("Hello, OAuth2!")
 
 
