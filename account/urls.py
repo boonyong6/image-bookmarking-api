@@ -1,7 +1,12 @@
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
+from rest_framework import routers
 
 from . import views
+from .api import views as api_views
+
+router = routers.DefaultRouter()
+router.register(r"users", api_views.UserViewSet)
 
 urlpatterns = [
     # # previous login url
@@ -52,4 +57,5 @@ urlpatterns = [
     path("users/<username>/", views.user_detail, name="user_detail"),
     path("api/hello/", views.ApiEndpoint.as_view()),  # Resource endpoint example.
     path("secret/", views.secret_page, name="secret"),
+    path("api/", include(router.urls)),
 ]

@@ -257,3 +257,21 @@
 ### Customizing the login flow
 
 - To prompt user logs in each time a request is made to the `/o/authorize/`, adds the `prompt=login`.
+
+# Django Rest Framework
+
+## Getting started
+
+### Step 1: Minimal setup
+
+- Configure the authentication schemes/backends.
+
+  ```py
+  REST_FRAMEWORK = {
+      # Will attempt to authenticate with each class, and set `request.user` and
+      #   `request.auth` via the first class that authenticated.
+      "DEFAULT_AUTHENTICATION_CLASSES": [
+          "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
+      ],
+  }
+  ```

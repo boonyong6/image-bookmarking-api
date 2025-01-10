@@ -194,7 +194,9 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 ABSOLUTE_URL_OVERRIDES = {
     # "app_label.model_name" - Model name must be all lowercase.
-    "auth.user": lambda user: reverse_lazy("user_detail", args=[user.username]),
+    AUTH_USER_MODEL.lower(): lambda user: reverse_lazy(
+        "user_detail", args=[user.username]
+    ),
 }
 
 # django-debug-toolbar
@@ -229,4 +231,17 @@ OAUTH2_PROVIDER = {
         "email": "Email and email verified information",
     },
     "OAUTH2_VALIDATOR_CLASS": "account.oauth_validators.CustomOAuth2Validator",
+}
+
+# Django REST framework
+
+REST_FRAMEWORK = {
+    # Will attempt to authenticate with each class, and set `request.user` and
+    #   `request.auth` via the first class that authenticated.
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
 }
