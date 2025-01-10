@@ -17,7 +17,7 @@ from actions.models import Action
 from actions.utils import create_action
 
 from .forms import LoginForm, ProfileEditForm, UserEditForm, UserRegistrationForm
-from .models import Contact, Profile
+from .models import Contact
 
 User = get_user_model()
 
@@ -89,9 +89,14 @@ def register(request: HttpRequest):
             # # Create the user profile.
             # Profile.objects.create(user=new_user)
             # create_action(new_user, "has created an account.")
-            return render(request, "account/register_done.html", {"new_user": new_user})
+            return render(
+                request,
+                "account/register_done.html",
+                {"new_user": new_user, "next": request.GET.get("next", None)},
+            )
     else:
         user_form = UserRegistrationForm()
+
     return render(request, "account/register.html", {"user_form": user_form})
 
 

@@ -231,6 +231,9 @@ OAUTH2_PROVIDER = {
         "email": "Email and email verified information",
     },
     "OAUTH2_VALIDATOR_CLASS": "account.oauth_validators.CustomOAuth2Validator",
+    # Enable and configure RP-Initiated Logout.
+    "OIDC_RP_INITIATED_LOGOUT_ENABLED": True,
+    "OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT": True,
 }
 
 # Django REST framework

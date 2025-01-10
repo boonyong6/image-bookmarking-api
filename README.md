@@ -2,26 +2,27 @@
 
 ## `account` app
 
-| API              | Endpoint                                                                          |
-| ---------------- | --------------------------------------------------------------------------------- |
-| Login            | `POST /api/auth/authorize/`<br />`POST /api/auth/token/`                          |
-| Logout           | `POST /api/auth/revoke_token/`                                                    |
-| Change password  | `PUT /api/auth/password/`                                                         |
-| Reset password   | `POST /api/auth/password-reset-request/` -><br />`POST /api/auth/password-reset/` |
-| List users       | `GET /api/users/`                                                                 |
-| Register user    | `POST /api/users/`                                                                |
-| View user detail | `GET /api/users/<username>/`                                                      |
-| Edit profile     | `PATCH /api/users/<username>/`                                                    |
-| Follow user      | `POST /api/contacts/`                                                             |
+| API              | Endpoint                                                            |
+| ---------------- | ------------------------------------------------------------------- |
+| Login            | `POST /o/authorize/`<br />`POST /o/token/`                          |
+| Logout           | `POST /o/logout/`                                                   |
+| View user detail | `GET /o/userinfo/`                                                  |
+| Change password  | `PUT /o/password/`                                                  |
+| Reset password   | `POST /o/password-reset-request/` -><br />`POST /o/password-reset/` |
+| Register user    | `GET /register/` -> `POST /register/`                               |
+| Edit profile     | `GET /edit-profile/`                                                |
+| REST Api:        |                                                                     |
+| List users       | `GET /api/users/`                                                   |
+| Follow user      | `POST /api/users/follow/`                                           |
 
 ## `images` app
 
-| API                             | Endpoint                           |
-| ------------------------------- | ---------------------------------- |
-| Add image                       | `POST /api/images/`                |
-| View image detail               | `GET /api/images/<id>/<slug>/`     |
-| List users who like the image   | `GET /api/user-likes/?image_id=`   |
-| List images that the user liked | `GET /api/image-likes/?user_id=`   |
-| like image                      | `POST /api/likes/`                 |
-| list image                      | `GET /api/images/`                 |
-| Get image ranking               | `GET /api/image-ranking/?limit=10` |
+| API                             | Endpoint                            |
+| ------------------------------- | ----------------------------------- |
+| list image                      | `GET /api/images/`                  |
+| Add image                       | `POST /api/images/`                 |
+| View image detail               | `GET /api/images/<id>/<slug>/`      |
+| Get image ranking               | `GET /api/images/ranking/?limit=10` |
+| List users who like the image   | `GET /api/likes/?image_id=`         |
+| List images that the user liked | `GET /api/likes/?user_id=`          |
+| like image                      | `POST /api/likes/`                  |
