@@ -169,4 +169,4 @@ media/
 *.crt
 *.key
 **/node_modules/
-tmp/commands-to-test-oauth2.txt
+commands-to-test-oauth2.txt
