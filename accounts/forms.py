@@ -40,7 +40,6 @@ class UserEditForm(forms.ModelForm):
 
     def clean_email(self):
         data = self.cleaned_data["email"]
-        print(f"[DEBUG] {self.instance=}")
         queryset = User.objects.exclude(id=self.instance.id).filter(email=data)
         if queryset.exists():
             raise forms.ValidationError("Email already in use.")
