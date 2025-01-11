@@ -183,7 +183,7 @@
   # settings.py
   OAUTH2_PROVIDER = {
       ...
-      "OAUTH2_VALIDATOR_CLASS": "account.oauth_validators.CustomOAuth2Validator",
+      "OAUTH2_VALIDATOR_CLASS": "accounts.oauth_validators.CustomOAuth2Validator",
   }
   ```
 

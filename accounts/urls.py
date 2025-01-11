@@ -47,7 +47,8 @@ urlpatterns = [
     #     name="password_reset_complete",
     # ),
     # See authentication URL patterns included at https://github.com/django/django/blob/stable/5.0.x/django/contrib/auth/urls.py
-    path("", include("django.contrib.auth.urls")),
+    # path("", include("django.contrib.auth.urls")),
+    path("", include("allauth.urls")),
     path("", views.dashboard, name="dashboard"),
     path("register/", views.register, name="register"),
     path("edit/", views.edit, name="edit"),

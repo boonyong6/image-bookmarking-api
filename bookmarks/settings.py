@@ -36,7 +36,7 @@ ALLOWED_HOSTS = ["mysite.com", "localhost", "127.0.0.1"]
 # Application definition
 
 INSTALLED_APPS = [
-    "account.apps.AccountConfig",  # Place before `django.contrib.admin` to override its templates.
+    "accounts.apps.AccountsConfig",  # Place before `django.contrib.admin` to override its templates.
     "django.contrib.admin",  # Includes standard authentication templates.
     "django.contrib.auth",  # Used by other `contrib` packages.
     "django.contrib.contenttypes",  # Used by other `contrib` packages, such as `auth` and `admin`.
@@ -51,6 +51,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "oauth2_provider",
     "corsheaders",
+    "allauth",
+    "allauth.account",
     "images.apps.ImagesConfig",
     "actions.apps.ActionsConfig",
 ]
@@ -69,6 +71,7 @@ MIDDLEWARE = [
     "oauth2_provider.middleware.OAuth2ExtraTokenMiddleware",  # Adds `Token` object (`request.access_token`) to the request.
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
     "django_browser_reload.middleware.BrowserReloadMiddleware",  # Must be placed after any others that encode the response's content, such as Django's `GZipMiddleware`.
     # "bookmarks.middleware.LogRequestMiddleware",
 ]
@@ -83,7 +86,7 @@ TEMPLATES = [
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.debug",
-                "django.template.context_processors.request",
+                "django.template.context_processors.request",  # `allauth` depends on this.
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",  # Adds `messages` variable to request context.
             ],
@@ -126,10 +129,10 @@ AUTH_PASSWORD_VALIDATORS = [
 # Authentication framework
 
 LOGIN_REDIRECT_URL = "dashboard"  # Default redirect URL after successful login.
-LOGIN_URL = "login"
-LOGOUT_URL = "logout"
+LOGIN_URL = "account_login"
+LOGOUT_URL = "account_logout"
 
-AUTH_USER_MODEL = "account.User"
+AUTH_USER_MODEL = "accounts.User"
 
 # Social authentication
 
@@ -143,7 +146,7 @@ SOCIAL_AUTH_PIPELINE = [
     "social_core.pipeline.social_auth.social_user",
     "social_core.pipeline.user.get_username",
     "social_core.pipeline.user.create_user",
-    # "account.authentication.create_profile",
+    # "accounts.authentication.create_profile",
     "social_core.pipeline.social_auth.associate_user",
     "social_core.pipeline.social_auth.load_extra_data",
     "social_core.pipeline.user.user_details",
@@ -154,7 +157,9 @@ SOCIAL_AUTH_PIPELINE = [
 AUTHENTICATION_BACKENDS = [
     "oauth2_provider.backends.OAuth2Backend",
     "django.contrib.auth.backends.ModelBackend",
-    "account.authentication.EmailAuthBackend",
+    # "accounts.authentication.EmailAuthBackend",
+    # * `allauth` specific authentication method, such as login by email
+    "allauth.account.auth_backends.AuthenticationBackend",
     "social_core.backends.google.GoogleOAuth2",
 ]
 
@@ -230,7 +235,7 @@ OAUTH2_PROVIDER = {
         "profile": "Basic information, such as name",
         "email": "Email and email verified information",
     },
-    "OAUTH2_VALIDATOR_CLASS": "account.oauth_validators.CustomOAuth2Validator",
+    "OAUTH2_VALIDATOR_CLASS": "accounts.oauth_validators.CustomOAuth2Validator",
     # Enable and configure RP-Initiated Logout.
     "OIDC_RP_INITIATED_LOGOUT_ENABLED": True,
     "OIDC_RP_INITIATED_LOGOUT_ALWAYS_PROMPT": True,

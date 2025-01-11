@@ -42,7 +42,7 @@ def user_login(request: HttpRequest):
     # GET request
     else:
         form = LoginForm()
-    return render(request, "account/login.html", {"form": form})
+    return render(request, "accounts/login.html", {"form": form})
 
 
 @login_required
@@ -65,7 +65,7 @@ def dashboard(request):
 
     return render(
         request,
-        "account/dashboard.html",
+        "accounts/dashboard.html",
         {
             "section": "dashboard",
             "bookmarklet_launcher": bookmarklet_launcher,
@@ -91,13 +91,13 @@ def register(request: HttpRequest):
             # create_action(new_user, "has created an account.")
             return render(
                 request,
-                "account/register_done.html",
+                "accounts/register_done.html",
                 {"new_user": new_user, "next": request.GET.get("next", None)},
             )
     else:
         user_form = UserRegistrationForm()
 
-    return render(request, "account/register.html", {"user_form": user_form})
+    return render(request, "accounts/register.html", {"user_form": user_form})
 
 
 @login_required
@@ -118,7 +118,7 @@ def edit(request: HttpRequest):
         profile_form = ProfileEditForm(instance=request.user.profile)
     return render(
         request,
-        "account/edit.html",
+        "accounts/edit.html",
         {"user_form": user_form, "profile_form": profile_form},
     )
 
@@ -127,7 +127,7 @@ def edit(request: HttpRequest):
 def user_list(request: HttpRequest):
     users = User.objects.filter(is_active=True)
     return render(
-        request, "account/user/list.html", {"section": "people", "users": users}
+        request, "accounts/user/list.html", {"section": "people", "users": users}
     )
 
 
@@ -135,7 +135,7 @@ def user_list(request: HttpRequest):
 def user_detail(request: HttpRequest, username):
     user = get_object_or_404(User, username=username, is_active=True)
     return render(
-        request, "account/user/detail.html", {"section": "people", "user": user}
+        request, "accounts/user/detail.html", {"section": "people", "user": user}
     )
 
 
