@@ -28,6 +28,12 @@
           <li {% if section == "people" %}class="selected"{% endif %}>
             <a href="{% url "user_list" %}">People</a>
           </li>
+          <li>
+            <a href="{% url "account_email" %}">Accounts</a>
+          </li>
+          <li>
+            <a href="{% url "admin:index" %}" target="_blank">Admin</a>
+          </li>
         </ul>
       {% endif %}
       <span class="user">

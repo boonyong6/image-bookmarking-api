@@ -128,7 +128,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Authentication framework
 
-LOGIN_REDIRECT_URL = "dashboard"  # Default redirect URL after successful login.
+# Default redirect URL after successful login or email confirmation.
+LOGIN_REDIRECT_URL = "dashboard"
+LOGOUT_REDIRECT_URL = "account_login"
 LOGIN_URL = "account_login"
 LOGOUT_URL = "account_logout"
 
@@ -253,3 +255,13 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
 }
+
+# allauth - Regular Accounts
+# https://docs.allauth.org/en/latest/account/configuration.html
+
+ACCOUNT_AUTHENTICATION_METHOD = "username_email"
+
+# # Verify email by code.
+# ACCOUNT_EMAIL_REQUIRED = True
+# ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+# ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
