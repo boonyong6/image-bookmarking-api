@@ -25,7 +25,6 @@ urlpatterns = (
         path("admin/", admin.site.urls),
         path("", include("accounts.urls")),
         path("images/", include("images.urls", namespace="images")),
-        path("o/", include("oauth2_provider.urls")),
         path("__reload__/", include("django_browser_reload.urls")),
         path("__debug__/", include("debug_toolbar.urls")),
     ]

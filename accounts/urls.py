@@ -9,6 +9,7 @@ router.register(r"users", api_views.UserViewSet)
 
 urlpatterns = [
     path("accounts/", include("allauth.urls")),
+    path("o/", include("oauth2_provider.urls")),
     path("", views.dashboard, name="dashboard"),
     path("edit/", views.edit, name="edit"),
     path("users/", views.user_list, name="user_list"),
