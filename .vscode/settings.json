@@ -35,6 +35,7 @@
     "rpush",
     "runserver",
     "safestring",
+    "socialaccount",
     "sqlmigrate",
     "startapp",
     "startproject",

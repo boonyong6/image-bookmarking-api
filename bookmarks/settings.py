@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     "corsheaders",
     "allauth",
     "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
     "images.apps.ImagesConfig",
     "actions.apps.ActionsConfig",
 ]
@@ -143,7 +145,6 @@ AUTHENTICATION_BACKENDS = [
     # "accounts.authentication.EmailAuthBackend",
     # * `allauth` specific authentication method, such as login by email
     "allauth.account.auth_backends.AuthenticationBackend",
-    "social_core.backends.google.GoogleOAuth2",
 ]
 
 # Internationalization
@@ -241,8 +242,18 @@ REST_FRAMEWORK = {
 # https://docs.allauth.org/en/latest/account/configuration.html
 
 ACCOUNT_AUTHENTICATION_METHOD = "username_email"
-
+ACCOUNT_EMAIL_REQUIRED = True
 # # Verify email by code.
-# ACCOUNT_EMAIL_REQUIRED = True
-# ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 # ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
+
+# allauth - Social Accounts
+# https://docs.allauth.org/en/latest/socialaccount/configuration.html
+
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        # If the email from the provider matches the email of an existing account,
+        #   log in with that account. (Enable only for trusted providers)
+        "EMAIL_AUTHENTICATION": True,
+    },
+}
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
