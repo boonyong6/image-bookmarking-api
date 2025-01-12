@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
+    "allauth.socialaccount.providers.facebook",
     "allauth.mfa",
     "images.apps.ImagesConfig",
     "actions.apps.ActionsConfig",
@@ -255,6 +256,21 @@ SOCIALACCOUNT_PROVIDERS = {
         # If the email from the provider matches the email of an existing account,
         #   log in with that account. (Enable only for trusted providers)
         "EMAIL_AUTHENTICATION": True,
+    },
+    "facebook": {
+        "SCOPE": ["email", "public_profile"],
+        "FIELDS": [
+            "id",
+            "first_name",
+            "last_name",
+            "middle_name",
+            "name",
+            "name_format",
+            "picture",
+            "short_name",
+            "email",
+        ],
+        "VERIFIED_EMAIL": False,
     },
 }
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
