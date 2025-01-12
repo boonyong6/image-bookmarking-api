@@ -14,4 +14,4 @@ markdown
 django-filter
 django-oauth-toolkit
 django-cors-headers
-django-allauth[socialaccount]
+django-allauth[socialaccount, mfa]

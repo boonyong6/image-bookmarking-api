@@ -16,8 +16,11 @@ cffi==1.17.1
     # via cryptography
 charset-normalizer==3.4.1
     # via requests
+colorama==0.4.6
+    # via qrcode
 cryptography==44.0.0
     # via
+    #   fido2
     #   jwcrypto
     #   pyjwt
     #   pyopenssl
@@ -33,7 +36,7 @@ django==5.1.4
     #   django-oauth-toolkit
     #   djangorestframework
     #   easy-thumbnails
-django-allauth[socialaccount]==65.3.1
+django-allauth[mfa,socialaccount]==65.3.1
     # via -r requirements.in
 django-browser-reload==1.17.0
     # via -r requirements.in
@@ -51,6 +54,8 @@ djangorestframework==3.15.2
     # via -r requirements.in
 easy-thumbnails==2.10
     # via -r requirements.in
+fido2==1.2.0
+    # via django-allauth
 idna==3.10
     # via requests
 jwcrypto==1.5.6
@@ -75,6 +80,8 @@ pyopenssl==24.3.0
     # via -r requirements.in
 python-decouple==3.8
     # via -r requirements.in
+qrcode==8.0
+    # via django-allauth
 redis==5.2.1
     # via -r requirements.in
 requests==2.32.3

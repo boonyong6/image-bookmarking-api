@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
+    "allauth.mfa",
     "images.apps.ImagesConfig",
     "actions.apps.ActionsConfig",
 ]
