@@ -1,0 +1,26 @@
+{% comment %} djlint:off {% endcomment %}
+{% load allauth %}
+
+<div class="my-4">
+  {{ attrs.form.non_field_errors }}
+
+  {% for field in attrs.form %}
+    <div class="mb-4">
+      {% with field_obj=field.field widget=field.field.widget %}
+        {% element field errors=field.errors id=field.id_for_label checked=field.value name=field.html_name value=field.value label=field.label help_text=field.help_text required=field_obj.required disabled=field_obj.disabled readonly=field_obj.disabled type=widget.input_type rows=widget.attrs.rows placeholder=widget.attrs.placeholder autocomplete=widget.attrs.autocomplete %}
+          {% slot label %}
+            {{ field.label }}
+          {% endslot %}
+          
+          {% slot value %}
+            {{ field.value }}
+          {% endslot %}
+      
+          {% slot help_text %}
+            {{ field.help_text }}
+          {% endslot %}
+        {% endelement %}
+      {% endwith %}
+    </div>
+  {% endfor %}
+</div>

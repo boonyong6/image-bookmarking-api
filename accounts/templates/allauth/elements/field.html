@@ -1,0 +1,55 @@
+{% comment %} djlint:off {% endcomment %}
+{% load allauth %}
+<div class="form-control">
+    {% if attrs.type == "textarea" %}
+        <label for="{{ attrs.id }}">
+            {% slot label %}
+            {% endslot %}
+        </label>
+        <textarea {% if attrs.required %}required{% endif %}
+                  {% if attrs.rows %}rows="{{ attrs.rows }}"{% endif %}
+                  {% if attrs.disabled %}disabled{% endif %}
+                  {% if attrs.readonly %}readonly{% endif %}
+                  {% if attrs.checked %}checked{% endif %}
+                  {% if attrs.name %}name="{{ attrs.name }}"{% endif %}
+                  {% if attrs.id %}id="{{ attrs.id }}"{% endif %}
+                  {% if attrs.placeholder %}placeholder="{{ attrs.placeholder }}"{% endif %}>{% slot value %}{% endslot %}</textarea>
+    {% elif attrs.type == "checkbox" or attrs.type == "radio" %}
+        <label for="{{ attrs.id }}" class="label cursor-pointer max-w-sm">
+            <span class="label-text">
+                {% slot label %}
+                {% endslot %}
+            </span>
+            <input {% if attrs.required %}required{% endif %}
+                   {% if attrs.disabled %}disabled{% endif %}
+                   {% if attrs.readonly %}readonly{% endif %}
+                   {% if attrs.checked %}checked{% endif %}
+                   {% if attrs.name %}name="{{ attrs.name }}"{% endif %}
+                   {% if attrs.id %}id="{{ attrs.id }}"{% endif %}
+                   {% if attrs.placeholder %}placeholder="{{ attrs.placeholder }}"{% endif %}
+                   {% if attrs.autocomplete %}autocomplete="{{ attrs.autocomplete }}"{% endif %}
+                   {% if attrs.value is not None %}value="{{ attrs.value }}"{% endif %}
+                   type="{{ attrs.type }}"
+                   class="{{ attrs.type }}">
+        </label>
+    {% else %}
+        <input {% if attrs.required %}required{% endif %}
+               {% if attrs.disabled %}disabled{% endif %}
+               {% if attrs.readonly %}readonly{% endif %}
+               {% if attrs.checked %}checked{% endif %}
+               {% if attrs.name %}name="{{ attrs.name }}"{% endif %}
+               {% if attrs.id %}id="{{ attrs.id }}"{% endif %}
+               {% if attrs.placeholder %}placeholder="{{ attrs.placeholder }}"{% endif %}
+               {% if attrs.autocomplete %}autocomplete="{{ attrs.autocomplete }}"{% endif %}
+               {% if attrs.value is not None and attrs.type != "password" %}value="{{ attrs.value }}"{% endif %}
+               type="{{ attrs.type }}"
+               class="input input-bordered w-full max-w-sm">
+    {% endif %}
+    {% if slots.help_text %}
+        <span class="text-info">
+            {% slot help_text %}
+            {% endslot %}
+        </span>
+    {% endif %}
+</div>
+{{ attrs.errors }}
