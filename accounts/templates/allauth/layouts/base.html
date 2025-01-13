@@ -1,0 +1,85 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>
+            {% block head_title %}
+            {% endblock head_title %}
+        </title>
+        {% block extra_head %}
+        {% endblock extra_head %}
+    </head>
+    <body>
+        <div class="drawer">
+            <input type="checkbox" class="drawer-toggle" id="my-drawer">
+            <div class="drawer-content flex flex-col">
+                {% block body %}
+                    <div class="navbar bg-base-300 w-full mb-2">
+                        <div class="flex-none lg:hidden">
+                            <label for="my-drawer"
+                                   aria-label="open sidebar"
+                                   class="btn btn-square btn-ghost">
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                     fill="none"
+                                     viewBox="0 0 24 24"
+                                     class="inline-block h-5 w-5 stroke-current">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                                </svg>
+                            </label>
+                        </div>
+                        <div class="mx-2 flex-1 px-2 text-xl">Identity</div>
+                        <div class="hidden flex-none lg:block">
+                            <ul class="menu menu-horizontal">
+                                {% include "allauth/layouts/menu.html" %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% if messages %}
+                        <div class="mx-6">
+                            <ul>
+                                {% for message in messages %}
+                                    <li>
+                                        <div role="alert" class="alert">
+                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                 fill="none"
+                                                 viewBox="0 0 24 24"
+                                                 class="stroke-info h-6 w-6 shrink-0">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                                                </path>
+                                            </svg>
+                                            <span>{{ message }}</span>
+                                            <button class="btn btn-circle btn-outline btn-xs"
+                                                    onclick="this.parentElement.parentElement.remove()">
+                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                     class="h-4 w-4"
+                                                     fill="none"
+                                                     viewBox="0 0 24 24"
+                                                     stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    <div class="px-6">
+                        {% block content %}
+                        {% endblock content %}
+                    </div>
+                {% endblock body %}
+                {% block extra_body %}
+                {% endblock extra_body %}
+            </div>
+            <div class="drawer-side">
+                <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+                <ul class="menu bg-base-200 min-h-full w-80 p-4">
+                    {% include "allauth/layouts/menu.html" %}
+                </ul>
+            </div>
+        </div>
+    </body>
+</html>
