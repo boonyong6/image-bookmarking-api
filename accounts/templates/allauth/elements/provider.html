@@ -1,0 +1,13 @@
+{% comment %} djlint:off {% endcomment %}
+{% load allauth %}
+
+<li class="mb-3">
+    <form action="{{ attrs.href }}" method="post">
+        {% slot csrf_token %}
+        {% endslot %}
+        
+        <button type="submit" class="btn btn-outline btn-primary hover:text-primary-content w-full max-w-96 md:w-[24rem]">
+            {{ attrs.name }}
+        </button>
+    </form>
+</li>

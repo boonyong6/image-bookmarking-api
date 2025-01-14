@@ -4,7 +4,7 @@
 
 @layer base {
   a {
-    @apply link link-accent;
+    @apply link link-primary;
   }
 }
 
@@ -16,6 +16,7 @@
   @apply mb-4;
 }
 
-.menu a {
+.menu a,
+.navbar a {
   @apply text-neutral-content no-underline;
 }

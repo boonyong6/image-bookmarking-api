@@ -1,5 +1,5 @@
 {% load allauth %}
 
 <div class="prose">
-  <h1 class="my-3">{% slot %}{% endslot %}</h1>
+  <h1 class="{{ attrs.class|default:"my-3" }}">{% slot %}{% endslot %}</h1>
 </div>

@@ -1,0 +1,17 @@
+{% comment %} djlint:off {% endcomment %}
+{% load i18n %}
+{% load allauth %}
+{% load socialaccount %}
+
+{% get_providers as socialaccount_providers %}
+{% if socialaccount_providers %}
+    {% if not SOCIALACCOUNT_ONLY %}
+        <div class="flex items-center max-w-sm my-4">
+            <div class="flex-grow border-t border-[oklch(var(--nc))]"></div>
+            <span class="mx-2">{% translate "Or Sign In With" %}</span>
+            <div class="flex-grow border-t border-[oklch(var(--nc))]"></div>
+        </div>
+    {% endif %}
+    {% include "socialaccount/snippets/provider_list.html" with process="login" %}
+    {% include "socialaccount/snippets/login_extra.html" %}
+{% endif %}
