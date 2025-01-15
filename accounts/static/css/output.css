@@ -1411,6 +1411,69 @@ a:focus-visible {
   content: var(--tw-content);
 }
 
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--rounded-box, 1rem);
+}
+
+.card:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.card-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  padding: var(--padding-card, 2rem);
+  gap: 0.5rem;
+}
+
+.card-body :where(p) {
+  flex-grow: 1;
+}
+
+.card figure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card.image-full {
+  display: grid;
+}
+
+.card.image-full:before {
+  position: relative;
+  content: "";
+  z-index: 10;
+  border-radius: var(--rounded-box, 1rem);
+  --tw-bg-opacity: 1;
+  background-color: var(--fallback-n,oklch(var(--n)/var(--tw-bg-opacity)));
+  opacity: 0.75;
+}
+
+.card.image-full:before,
+    .card.image-full > * {
+  grid-column-start: 1;
+  grid-row-start: 1;
+}
+
+.card.image-full > figure img {
+  height: 100%;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+
+.card.image-full > .card-body {
+  position: relative;
+  z-index: 20;
+  --tw-text-opacity: 1;
+  color: var(--fallback-nc,oklch(var(--nc)/var(--tw-text-opacity)));
+}
+
 .checkbox {
   flex-shrink: 0;
   --chkbg: var(--fallback-bc,oklch(var(--bc)/1));
@@ -2107,6 +2170,44 @@ a:focus-visible {
   }
 }
 
+.card :where(figure:first-child) {
+  overflow: hidden;
+  border-start-start-radius: inherit;
+  border-start-end-radius: inherit;
+  border-end-start-radius: unset;
+  border-end-end-radius: unset;
+}
+
+.card :where(figure:last-child) {
+  overflow: hidden;
+  border-start-start-radius: unset;
+  border-start-end-radius: unset;
+  border-end-start-radius: inherit;
+  border-end-end-radius: inherit;
+}
+
+.card:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.card.bordered {
+  border-width: 1px;
+  --tw-border-opacity: 1;
+  border-color: var(--fallback-b2,oklch(var(--b2)/var(--tw-border-opacity)));
+}
+
+.card.compact .card-body {
+  padding: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.card.image-full :where(figure) {
+  overflow: hidden;
+  border-radius: inherit;
+}
+
 .checkbox:focus {
   box-shadow: none;
 }
@@ -2656,6 +2757,18 @@ html:has(.drawer-toggle:checked) {
   position: absolute;
 }
 
+.card-compact .card-body {
+  padding: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.card-normal .card-body {
+  padding: var(--padding-card, 2rem);
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
 .drawer-open > .drawer-toggle ~ .drawer-side > .drawer-overlay {
   cursor: default;
   background-color: transparent;
@@ -2715,16 +2828,16 @@ html:has(.drawer-toggle:checked) {
   margin-bottom: 1rem;
 }
 
-.mb-2 {
-  margin-bottom: 0.5rem;
-}
-
 .mb-3 {
   margin-bottom: 0.75rem;
 }
 
 .mb-4 {
   margin-bottom: 1rem;
+}
+
+.mb-7 {
+  margin-bottom: 1.75rem;
 }
 
 .block {
@@ -2757,6 +2870,10 @@ html:has(.drawer-toggle:checked) {
 
 .min-h-full {
   min-height: 100%;
+}
+
+.min-h-screen {
+  min-height: 100vh;
 }
 
 .w-4 {
@@ -2827,6 +2944,11 @@ html:has(.drawer-toggle:checked) {
   border-color: oklch(var(--nc));
 }
 
+.bg-base-100 {
+  --tw-bg-opacity: 1;
+  background-color: var(--fallback-b1,oklch(var(--b1)/var(--tw-bg-opacity, 1)));
+}
+
 .bg-base-200 {
   --tw-bg-opacity: 1;
   background-color: var(--fallback-b2,oklch(var(--b2)/var(--tw-bg-opacity, 1)));
@@ -2854,9 +2976,18 @@ html:has(.drawer-toggle:checked) {
   padding-right: 0.5rem;
 }
 
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
 .px-6 {
   padding-left: 1.5rem;
   padding-right: 1.5rem;
+}
+
+.pb-2 {
+  padding-bottom: 0.5rem;
 }
 
 .pl-1 {
@@ -2873,6 +3004,11 @@ html:has(.drawer-toggle:checked) {
   color: var(--fallback-a,oklch(var(--a)/var(--tw-text-opacity, 1)));
 }
 
+.text-base-content {
+  --tw-text-opacity: 1;
+  color: var(--fallback-bc,oklch(var(--bc)/var(--tw-text-opacity, 1)));
+}
+
 .text-neutral-content {
   --tw-text-opacity: 1;
   color: var(--fallback-nc,oklch(var(--nc)/var(--tw-text-opacity, 1)));
@@ -2880,6 +3016,12 @@ html:has(.drawer-toggle:checked) {
 
 .opacity-60 {
   opacity: 0.6;
+}
+
+.shadow-xl {
+  --tw-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --tw-shadow-colored: 0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
 .outline {
@@ -2912,8 +3054,8 @@ html:has(.drawer-toggle:checked) {
     width: 24rem;
   }
 
-  .md\:w-\[32rem\] {
-    width: 32rem;
+  .md\:w-\[30rem\] {
+    width: 30rem;
   }
 
   .md\:w-\[64rem\] {

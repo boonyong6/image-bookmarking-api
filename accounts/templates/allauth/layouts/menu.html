@@ -33,12 +33,12 @@
   {% endif %}
   {% url 'account_logout' as logout_url_ %}
   {% if logout_url_ %}
-    <li>
-      <form action="{{ logout_url_ }}" method="post">
+    <form action="{{ logout_url_ }}" method="post">
+      <li>
         <button type="submit" class="text-neutral-content">{% trans "Sign Out" %}</button>
         {% csrf_token %}
-      </form>
-    </li>
+      </li>
+    </form>
   {% endif %}
 {% else %}
   {% url 'account_login' as login_url_ %}
