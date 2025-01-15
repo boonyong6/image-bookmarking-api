@@ -162,7 +162,7 @@ cython_debug/
 #.idea/
 
 # Local
-run-*.sh
+docs/snippets/docker/
 mysite/mysite_data.json
 media/
 # SSL/TLS cert files

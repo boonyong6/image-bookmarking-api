@@ -18,6 +18,8 @@ charset-normalizer==3.4.1
     # via requests
 colorama==0.4.6
     # via qrcode
+coverage==7.6.10
+    # via -r requirements.in
 cryptography==44.0.0
     # via
     #   fido2

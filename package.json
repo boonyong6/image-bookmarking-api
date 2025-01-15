@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "./run.sh",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "source ./scripts/init-env.sh && ./scripts/run-dev.sh",
+    "test": "source ./scripts/init-env.sh && ./scripts/run-test.sh"
   },
   "author": "Boon Yong",
   "license": "ISC",
