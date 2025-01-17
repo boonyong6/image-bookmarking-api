@@ -295,6 +295,11 @@ a.follow {
 }
 
 /* users */
+#people-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+
 #people-list img {
   width: 180px;
   height: 180px;
@@ -303,7 +308,6 @@ a.follow {
 }
 #people-list .user {
   width: 180px;
-  float: left;
   overflow: auto;
   padding: 10px;
 }
