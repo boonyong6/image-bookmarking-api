@@ -8,12 +8,12 @@
 
 {% block body %}
     {% block content %}
-        <div class="flex items-center min-h-screen">
+        <div class="flex items-center md:min-h-screen">
             <div class="grow"></div>
             <div class="mb-7 px-4 md:w-[30rem]">
                 <div class="card bg-base-100 text-base-content pb-2 shadow-xl">
-                    <div class="card-body items-center">
-                        {% element h1 %}
+                    <div class="card-body">
+                        {% element h1 class="my-3 text-center" %}
                             {% trans "Sign Up" %}
                         {% endelement %}
                         {% setvar link %}
@@ -22,7 +22,7 @@
                             {% setvar end_link %}
                             </a>
                         {% endsetvar %}
-                        {% element p %}
+                        {% element p class="max-w-sm" %}
                             {% blocktranslate %}Already have an account? Then please {{ link }}sign in{{ end_link }}.{% endblocktranslate %}
                         {% endelement %}
                         {% if not SOCIALACCOUNT_ONLY %}

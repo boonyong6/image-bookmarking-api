@@ -9,12 +9,12 @@
 
 {% block body %}
     {% block content %}
-        <div class="flex items-center min-h-screen">
+        <div class="flex items-center md:min-h-screen">
             <div class="grow"></div>
             <div class="mb-7 px-4 md:w-[30rem]">
                 <div class="card bg-base-100 text-base-content pb-2 shadow-xl">
-                    <div class="card-body items-center">
-                        {% element h1 %}
+                    <div class="card-body">
+                        {% element h1 class="my-3 text-center" %}
                             {% trans "Sign In" %}
                         {% endelement %}
                         {% if not SOCIALACCOUNT_ONLY %}
@@ -24,7 +24,7 @@
                                 {% setvar end_link %}
                                 </a>
                             {% endsetvar %}
-                            {% element p %}
+                            {% element p class="max-w-sm" %}
                                 {% blocktranslate %}If you have not created an account yet, then please {{ link }}sign up{{ end_link }} first.{% endblocktranslate %}
                             {% endelement %}
                             {% url 'account_login' as login_url %}

@@ -2,7 +2,7 @@
 {% load allauth %}
 <div class="form-control">
     {% if attrs.type == "textarea" %}
-        <label for="{{ attrs.id }}">
+        <label for="{{ attrs.id }}" class="mb-2">
             {% slot label %}
             {% endslot %}
         </label>
@@ -13,7 +13,8 @@
                   {% if attrs.checked %}checked{% endif %}
                   {% if attrs.name %}name="{{ attrs.name }}"{% endif %}
                   {% if attrs.id %}id="{{ attrs.id }}"{% endif %}
-                  {% if attrs.placeholder %}placeholder="{{ attrs.placeholder }}"{% endif %}>{% slot value %}{% endslot %}</textarea>
+                  {% if attrs.placeholder %}placeholder="{{ attrs.placeholder }}"{% endif %}
+                  class="textarea textarea-bordered base-content">{% slot value %}{% endslot %}</textarea>
     {% elif attrs.type == "checkbox" or attrs.type == "radio" %}
         <label for="{{ attrs.id }}" class="label cursor-pointer max-w-sm">
             <span class="label-text">
@@ -46,7 +47,7 @@
                class="input input-bordered w-full max-w-sm">
     {% endif %}
     {% if slots.help_text %}
-        <span class="text-accent pl-1">
+        <span class="text-accent pl-1 max-w-sm">
             {% slot help_text %}
             {% endslot %}
         </span>

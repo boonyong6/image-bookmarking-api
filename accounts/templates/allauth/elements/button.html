@@ -7,7 +7,7 @@
 {% if attrs.value %}value="{{ attrs.value }}"{% endif %}
 {% if attrs.type %}type="{{ attrs.type }}"{% endif %}
 {% if attrs.id %}id="{{ attrs.id }}"{% endif %}
-class="{{ attrs.class|default:"btn btn-primary" }}"
+class="{{ attrs.class|default:"btn btn-primary hover:text-primary-content" }}"
 >
 {% slot %}
 {% endslot %}
