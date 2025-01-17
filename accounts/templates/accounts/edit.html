@@ -1,18 +1,28 @@
-{% extends "base.html" %}
+{% extends "allauth/layouts/manage.html" %}
+{% comment %} djlint:off {% endcomment %}
+{% load allauth %}
 
 {% block title %}
   Edit your account
 {% endblock title %}
 
 {% block content %}
-  <h1>Edit your account</h1>
+  {% element h1 %}
+    Edit Profile
+  {% endelement %}
   <p>You can edit your account using the following form:</p>
-  <form method="post" enctype="multipart/form-data">
-    {{ user_form.as_p }}
-    {{ profile_form.as_p }}
+  <form method="post" enctype="multipart/form-data" class="mb-3">
+    {% element fields form=user_form unlabeled=True %}
+    {% endelement %}
+                                    
+    {% element fields form=profile_form unlabeled=True %}
+    {% endelement %}
+    
     {% csrf_token %}
     <p>
-      <input type="submit" value="Save changes">
+      {% element button type="submit" class="btn btn-primary" %}
+        Save changes
+      {% endelement %}
     </p>
   </form>
 {% endblock content %}

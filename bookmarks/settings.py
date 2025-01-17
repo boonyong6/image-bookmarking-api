@@ -132,7 +132,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Authentication framework
 
 # Default redirect URL after successful login or email confirmation.
-LOGIN_REDIRECT_URL = "dashboard"
+LOGIN_REDIRECT_URL = "user_edit"
 LOGOUT_REDIRECT_URL = "account_login"
 LOGIN_URL = "account_login"
 LOGOUT_URL = "account_logout"

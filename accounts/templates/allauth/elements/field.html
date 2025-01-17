@@ -16,7 +16,7 @@
                   {% if attrs.placeholder %}placeholder="{{ attrs.placeholder }}"{% endif %}
                   class="textarea textarea-bordered base-content">{% slot value %}{% endslot %}</textarea>
     {% elif attrs.type == "checkbox" or attrs.type == "radio" %}
-        <label for="{{ attrs.id }}" class="label cursor-pointer max-w-sm">
+        <label for="{{ attrs.id }}" class="label cursor-pointer max-w-sm justify-normal gap-3">
             <span class="label-text">
                 {% slot label %}
                 {% endslot %}
@@ -33,7 +33,49 @@
                    type="{{ attrs.type }}"
                    class="{{ attrs.type }}">
         </label>
+    {% elif attrs.type == "file" %}
+        <div class="label">
+            <span class="label-text">{{ attrs.label }}</span>
+        </div>
+        {% if attrs.value %}
+            <div class="flex gap-2 items-center">
+                <div class="label">
+                    <span class="label-text">Current:</span>
+                </div>
+                <a href="{{ attrs.value }}">{{ attrs.value }}</a>
+            </div>
+            <label for="{{ attrs.name }}-clear_id" class="label cursor-pointer max-w-sm justify-normal gap-3">
+                <span class="label-text">
+                    Clear
+                </span>
+                <input {% if attrs.required %}required{% endif %}
+                       {% if attrs.disabled %}disabled{% endif %}
+                       {% if attrs.readonly %}readonly{% endif %}
+                       {% if attrs.checked %}checked{% endif %}
+                       {% if attrs.name %}name="{{ attrs.name }}-clear"{% endif %}
+                       {% if attrs.id %}id="{{ attrs.name }}-clear_id"{% endif %}
+                       {% if attrs.placeholder %}placeholder="{{ attrs.placeholder }}"{% endif %}
+                       {% if attrs.autocomplete %}autocomplete="{{ attrs.autocomplete }}"{% endif %}
+                       {% if attrs.value is not None %}value="{{ attrs.value }}"{% endif %}
+                       type="checkbox"
+                       class="checkbox">
+            </label>
+        {% endif %}
+        <input {% if attrs.required %}required{% endif %}
+               {% if attrs.disabled %}disabled{% endif %}
+               {% if attrs.readonly %}readonly{% endif %}
+               {% if attrs.checked %}checked{% endif %}
+               {% if attrs.name %}name="{{ attrs.name }}"{% endif %}
+               {% if attrs.id %}id="{{ attrs.id }}"{% endif %}
+               {% if attrs.placeholder %}placeholder="{{ attrs.placeholder }}"{% endif %}
+               {% if attrs.autocomplete %}autocomplete="{{ attrs.autocomplete }}"{% endif %}
+               {% if attrs.value is not None and attrs.type != "password" %}value="{{ attrs.value }}"{% endif %}
+               type="{{ attrs.type }}"
+               class="file-input file-input-bordered w-full max-w-xs">
     {% else %}
+        <div class="label">
+            <span class="label-text">{{ attrs.label }}</span>
+        </div>
         <input {% if attrs.required %}required{% endif %}
                {% if attrs.disabled %}disabled{% endif %}
                {% if attrs.readonly %}readonly{% endif %}

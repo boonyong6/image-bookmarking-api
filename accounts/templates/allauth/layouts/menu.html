@@ -1,6 +1,9 @@
 {% load i18n %}
 
 {% if user.is_authenticated %}
+  <li>
+    <a href="{% url "user_edit" %}">{% trans "Profile" %}</a>
+  </li>
   {% url 'account_email' as email_url_ %}
   {% if email_url_ %}
     <li>

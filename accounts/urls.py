@@ -11,7 +11,7 @@ urlpatterns = [
     path("accounts/", include("allauth.urls")),
     path("o/", include("oauth2_provider.urls")),
     path("", views.dashboard, name="dashboard"),
-    path("edit/", views.edit, name="edit"),
+    path("accounts/profile/", views.user_edit, name="user_edit"),
     path("users/", views.user_list, name="user_list"),
     # Place `user_follow` before `user_detail`, otherwise this pattern will never reached.
     path("users/follow/", views.user_follow, name="user_follow"),
