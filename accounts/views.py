@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import AbstractUser
 from django.db.models.query import QuerySet
 from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils.html import escape
 from django.views.decorators.http import require_POST
@@ -109,8 +109,9 @@ def user_edit(request: HttpRequest):
         )
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
-            profile_form.save()
+            profile = profile_form.save()
             messages.success(request, "Profile updated successfully")
+            return redirect(profile)
         else:
             messages.error(request, "Error updating your profile")
     else:

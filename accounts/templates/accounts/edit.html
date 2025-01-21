@@ -1,6 +1,7 @@
 {% extends "allauth/layouts/manage.html" %}
 {% comment %} djlint:off {% endcomment %}
 {% load allauth %}
+{% load static %}
 
 {% block title %}
   Edit your account
@@ -14,7 +15,7 @@
   <form method="post" enctype="multipart/form-data" class="mb-3">
     {% element fields form=user_form unlabeled=True %}
     {% endelement %}
-                                    
+    
     {% element fields form=profile_form unlabeled=True %}
     {% endelement %}
     
@@ -26,3 +27,8 @@
     </p>
   </form>
 {% endblock content %}
+
+{% block extra_body %}
+  <div class="template-data" data-not-an-image="{% static "images/no-image.jpg" %}"></div>
+  <script type="module" src="{% static "js/image-field-preview.js" %}"></script>
+{% endblock extra_body %}
