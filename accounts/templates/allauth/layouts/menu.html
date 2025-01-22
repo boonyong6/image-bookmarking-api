@@ -2,47 +2,8 @@
 
 {% if user.is_authenticated %}
   <li>
-    <a href="{% url "user_edit" %}">{% trans "Profile" %}</a>
+    <a href="{% url "oauth2_provider:list" %}">{% trans "Applications" %}</a>
   </li>
-  {% url 'account_email' as email_url_ %}
-  {% if email_url_ %}
-    <li>
-      <a href="{{ email_url_ }}">{% trans "Change Email" %}</a>
-    </li>
-  {% endif %}
-  {% url 'account_change_password' as change_password_url_ %}
-  {% if change_password_url_ %}
-    <li>
-      <a href="{{ change_password_url_ }}">{% trans "Change Password" %}</a>
-    </li>
-  {% endif %}
-  {% url 'socialaccount_connections' as connections_url_ %}
-  {% if connections_url_ %}
-    <li>
-      <a href="{{ connections_url_ }}">{% trans "Account Connections" %}</a>
-    </li>
-  {% endif %}
-  {% url 'mfa_index' as mfa_url_ %}
-  {% if mfa_url_ %}
-    <li>
-      <a href="{{ mfa_url_ }}">{% trans "Two-Factor Authentication" %}</a>
-    </li>
-  {% endif %}
-  {% url 'usersessions_list' as usersessions_list_url_ %}
-  {% if usersessions_list_url_ %}
-    <li>
-      <a href="{{ usersessions_list_url_ }}">{% trans "Sessions" %}</a>
-    </li>
-  {% endif %}
-  {% url 'account_logout' as logout_url_ %}
-  {% if logout_url_ %}
-    <form action="{{ logout_url_ }}" method="post">
-      <li>
-        <button type="submit" class="text-neutral-content">{% trans "Sign Out" %}</button>
-        {% csrf_token %}
-      </li>
-    </form>
-  {% endif %}
 {% else %}
   {% url 'account_login' as login_url_ %}
   {% if login_url_ %}

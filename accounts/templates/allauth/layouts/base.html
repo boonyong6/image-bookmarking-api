@@ -1,4 +1,6 @@
 {% load i18n %}
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -29,12 +31,71 @@
                                 </svg>
                             </label>
                         </div>
-                        <a class="mx-2 flex-1 px-2 text-xl" href="{% url "user_edit" %}">Identity</a>
+                        <div class="flex-1">
+                            <a class="mx-2 px-2 text-xl" href="{% url "user_edit" %}">Identity</a>
+                        </div>
                         <div class="hidden flex-none lg:block">
                             <ul class="menu menu-horizontal">
                                 {% include "allauth/layouts/menu.html" %}
                             </ul>
                         </div>
+                        {% if user.is_authenticated %}
+                            <div class="flex-none mr-2">
+                                <div class="dropdown dropdown-end">
+                                    <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
+                                        <div class="w-10 rounded-full">
+                                            <img alt="Profile picture"
+                                                 src="{% if user.profile.photo %}{{ user.profile.photo.url }}{% else %}{% static "images/default-profile-picture.jpg" %}{% endif %}" />
+                                        </div>
+                                    </div>
+                                    <ul tabindex="0"
+                                        class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
+                                        <li>
+                                            <a href="{% url "user_edit" %}">{% trans "Profile" %}</a>
+                                        </li>
+                                        {% url 'account_email' as email_url_ %}
+                                        {% if email_url_ %}
+                                            <li>
+                                                <a href="{{ email_url_ }}">{% trans "Change Email" %}</a>
+                                            </li>
+                                        {% endif %}
+                                        {% url 'account_change_password' as change_password_url_ %}
+                                        {% if change_password_url_ %}
+                                            <li>
+                                                <a href="{{ change_password_url_ }}">{% trans "Change Password" %}</a>
+                                            </li>
+                                        {% endif %}
+                                        {% url 'socialaccount_connections' as connections_url_ %}
+                                        {% if connections_url_ %}
+                                            <li>
+                                                <a href="{{ connections_url_ }}">{% trans "Account Connections" %}</a>
+                                            </li>
+                                        {% endif %}
+                                        {% url 'mfa_index' as mfa_url_ %}
+                                        {% if mfa_url_ %}
+                                            <li>
+                                                <a href="{{ mfa_url_ }}">{% trans "Two-Factor Authentication" %}</a>
+                                            </li>
+                                        {% endif %}
+                                        {% url 'usersessions_list' as usersessions_list_url_ %}
+                                        {% if usersessions_list_url_ %}
+                                            <li>
+                                                <a href="{{ usersessions_list_url_ }}">{% trans "Sessions" %}</a>
+                                            </li>
+                                        {% endif %}
+                                        {% url 'account_logout' as logout_url_ %}
+                                        {% if logout_url_ %}
+                                            <form action="{{ logout_url_ }}" method="post">
+                                                <li>
+                                                    <button type="submit" class="text-neutral-content">{% trans "Sign Out" %}</button>
+                                                    {% csrf_token %}
+                                                </li>
+                                            </form>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                        {% endif %}
                     </div>
                     {% if messages %}
                         <ul class="mx-6">
